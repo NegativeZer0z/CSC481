@@ -2,6 +2,13 @@
 #include "StaticPlatform.h"
 #include "Player.h"
 #include "MovingPlatform.h"
+#include "Thread.h"
+#include "Timeline.h"
+
+void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime)
+{
+    fe->runMovement(moving, player, deltaTime);
+}
 
 int main() {
     sf::ContextSettings settings;
@@ -42,7 +49,7 @@ int main() {
     //downloaded and utilize the "mage walking poses sheet copy.png"
     player.initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
 
-    float deltaTime = 0.f;
+    int64_t deltaTime = 0;
 
     //set up default view for the window
     //Referenced from the SFML view page
@@ -54,13 +61,19 @@ int main() {
     view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
     window.setView(view);
 
+    Timeline global(nullptr, 16);
+    int64_t lastTime = global.getTime();
+
     //switch between the two scaling modes, false = proportional, true = constant
     bool mode = false;
 
     //keep the window open while program is running
     while(true) {
 
-        deltaTime = clock.restart().asSeconds();
+        //deltaTime = clock.restart().asSeconds();
+        int64_t currTime = global.getTime();
+        deltaTime = currTime - lastTime;
+        lastTime = currTime;
 
         sf::Event event; //checking for window events
 
@@ -68,7 +81,7 @@ int main() {
 
             if(event.type == sf::Event::Closed) { //check close window event
                 window.close();
-                exit(1);
+                exit(0);
             }
             if(event.type == sf::Event::KeyPressed) {
                 if(event.key.code == sf::Keyboard::Z) { //if z key is pressed switch modes between constant and proportional
@@ -93,11 +106,22 @@ int main() {
         moving.update(deltaTime);
         player.update(deltaTime);
 
+        // std::mutex m;
+        // std::condition_variable cv;
+        // Thread t1(0, NULL, &m, &cv);
+        // Thread t2(1, &t1, &m, &cv);
+
+        // std::thread first(run_wrapper, &t1, &moving, &player, deltaTime);
+        // std::thread second(run_wrapper, &t2, &moving, &player, deltaTime);
+
+        // first.join();
+        // second.join();
+
+        player.checkCollision(floor);
         player.wallCollision();
         player.checkCollision(platform);
         moving.checkCollision(player);
         player.checkCollision(moving);
-        player.checkCollision(floor);
 
         moving.checkBoundaries();
 

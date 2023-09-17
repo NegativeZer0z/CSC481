@@ -1,1 +1,11 @@
 /.vscode
+Entity.o
+GeneralPlatform.o
+.gitignore
+MovingPlatform.o
+Player.o
+.gitignore
+Thread.o
+Timeline.o
+StaticPlatform.o
+platformer

@@ -14,6 +14,11 @@ void Entity::moveSprite(sf::Vector2f velocity) {
     move(velocity);
 }
 
+void Entity::setSpritePosition(float x, float y) {
+    sprite.setPosition(x, y);
+    setPosition(x, y);
+}
+
 void Entity::initTexture(std::string path) {
     if(!texture.loadFromFile(path, sf::IntRect(position.x, position.y, size.x, size.y))) {
         std::cout << "Can't load texture" << path << "\n";

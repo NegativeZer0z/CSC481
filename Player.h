@@ -4,6 +4,10 @@
 #define MAGE_START_OFFSET 12 //offset to find the starting point for the texture for mage.png
 #define MAGE_LEFT_OFFSET 36 //offset to make the sprite smaller to match art for mage.png
 #define MAGE_BOT_OFFSET 2 //offset to make the bottom pixel line not appear for mage.png
+#define GRAVITY 9.18f
+#define MAX_VERTICAL_VELOCITY 8.f
+#define PLAYER_SPEED 1.f
+#define JUMP_HEIGHT 280.f
 
 class Player : public Entity {
     
@@ -39,6 +43,4 @@ class Player : public Entity {
         bool checkCollision(Entity& entity); //check collision when moving to other entities
 
         void wallCollision(); //check collision with the borders of the window
-
-        void setPlayerPosition(float x, float y); //set position of the sprite and rectangle object
 };

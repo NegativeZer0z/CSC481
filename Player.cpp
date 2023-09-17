@@ -83,7 +83,7 @@ bool Player::checkCollision(Entity& entity) {
             && playerBounds.left + playerBounds.width > entityBounds.left) 
         {
             velocity.y = 0.f;
-            setPlayerPosition(playerBounds.left, entityBounds.top - playerBounds.height);
+            setSpritePosition(playerBounds.left, entityBounds.top - playerBounds.height);
             jump = true;
         }
         //top collision
@@ -93,7 +93,7 @@ bool Player::checkCollision(Entity& entity) {
             && playerBounds.left + playerBounds.width > entityBounds.left) 
         {
             velocity.y = 0.f;
-            setPlayerPosition(playerBounds.left, entityBounds.top + entityBounds.height);
+            setSpritePosition(playerBounds.left, entityBounds.top + entityBounds.height);
         }
         //right collision
         else if(playerBounds.left < entityBounds.left 
@@ -102,7 +102,7 @@ bool Player::checkCollision(Entity& entity) {
             && playerBounds.top + playerBounds.height > entityBounds.top) 
         {
             velocity.x = 0.f;
-            setPlayerPosition(entityBounds.left - playerBounds.width, playerBounds.top);
+            setSpritePosition(entityBounds.left - playerBounds.width, playerBounds.top);
         }
         //left collision
         else if(playerBounds.left > entityBounds.left 
@@ -111,7 +111,7 @@ bool Player::checkCollision(Entity& entity) {
             && playerBounds.top + playerBounds.height > entityBounds.top) 
         {
             velocity.x = 0.f;
-            setPlayerPosition(entityBounds.left + entityBounds.width, playerBounds.top);
+            setSpritePosition(entityBounds.left + entityBounds.width, playerBounds.top);
         }
 
         return true;
@@ -121,20 +121,16 @@ bool Player::checkCollision(Entity& entity) {
 
 void Player::wallCollision() {
     if(sprite.getPosition().x < 0.f) { //left side
-        setPlayerPosition(0.f, sprite.getPosition().y);
+        setSpritePosition(0.f, sprite.getPosition().y);
     }
     if(sprite.getPosition().y < 0.f) { //bottom
-        setPlayerPosition(sprite.getPosition().x, 0.f);
+        setSpritePosition(sprite.getPosition().x, 0.f);
     }
     if(sprite.getPosition().x + sprite.getGlobalBounds().width > WINDOW_WIDTH) { //right side
-        setPlayerPosition(WINDOW_WIDTH - sprite.getGlobalBounds().width, sprite.getPosition().y);
+        setSpritePosition(WINDOW_WIDTH - sprite.getGlobalBounds().width, sprite.getPosition().y);
     }
     if(sprite.getPosition().y + sprite.getGlobalBounds().height > WINDOW_HEIGHT) { //top
-        setPlayerPosition(sprite.getPosition().x, WINDOW_HEIGHT - sprite.getGlobalBounds().height);
+        setSpritePosition(sprite.getPosition().x, WINDOW_HEIGHT - sprite.getGlobalBounds().height);
     }
 }
 
-void Player::setPlayerPosition(float x, float y) {
-    sprite.setPosition(x, y);
-    setPosition(x, y);
-}

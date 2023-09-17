@@ -1,10 +1,16 @@
 CC = g++
 
-platformer: main.o StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o
-	$(CC) main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system
+platformer: main.o StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o
+	$(CC) main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
 main.o: main.cpp
 	$(CC) -c main.cpp
+
+Thread.o: Thread.cpp Thread.h
+	$(CC) -c Thread.cpp
+
+Timeline.o: Timeline.h Timeline.cpp
+	$(CC) -c Timeline.cpp
 
 Entity.o: Entity.cpp Entity.h
 	$(CC) -c Entity.cpp
@@ -28,4 +34,5 @@ clean:
 	rm -f GeneralPlatform.o
 	rm -f Entity.o
 	rm -f main.o
+	rm -f Thread.o
 	rm -f platformer

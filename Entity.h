@@ -8,12 +8,6 @@
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
 
-//player physics
-#define GRAVITY 9.18f
-#define MAX_VERTICAL_VELOCITY 8.f
-#define PLAYER_SPEED 120.f
-#define JUMP_HEIGHT 280.f
-
 class Entity : public sf::RectangleShape {
 
     protected:
@@ -33,4 +27,6 @@ class Entity : public sf::RectangleShape {
         void moveSprite(sf::Vector2f velocity); //move both the sprite and rectangle
 
         void initTexture(std::string path); //initialize the texture and sprite
+
+        void setSpritePosition(float x, float y); //set the position of the sprite and rectangle
 };
