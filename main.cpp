@@ -63,12 +63,8 @@ int main() {
     bool mode = false;
 
     std::vector<Entity> list;
-    list.push_back(moving);
     list.push_back(floor);
     list.push_back(platform);
-
-    std::vector<MovingPlatform> movingList;
-    movingList.push_back(moving);
 
     //keep the window open while program is running
     while(true) {
@@ -115,12 +111,6 @@ int main() {
 
         first.join();
         second.join();
-
-        //player.wallCollision();
-        //player.checkCollision(platform);
-        // moving.checkCollision(player);
-        // player.checkCollision(moving);
-        //player.checkCollision(list[1]);
 
         //clear window for drawing
         window.clear(sf::Color::Black);

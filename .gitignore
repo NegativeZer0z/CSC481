@@ -9,3 +9,4 @@ Thread.o
 Timeline.o
 StaticPlatform.o
 platformer
+main.o

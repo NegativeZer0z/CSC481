@@ -35,6 +35,7 @@ void Thread::runMovement(MovingPlatform *moving, Player *player, float deltaTime
                 std::unique_lock<std::mutex> lock(*_mutex);
                 (*player).wallCollision();
                 (*moving).checkCollision(*player);
+                (*player).checkCollision(*moving);
 
                 for(int i = 0; i < list.size(); ++i) {
                     (*player).checkCollision(list[i]);
