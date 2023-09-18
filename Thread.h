@@ -11,20 +11,20 @@
 class Thread {
 
     private:
-        bool busy;
+        bool busy; //if thread is currently busy
 
-        int identity;
+        int identity; //id of thread
 
-        Thread *other;
+        Thread *other; //ptr to other thread
 
-        std::mutex *_mutex;
+        std::mutex *_mutex; //mutex lock
 
-        std::condition_variable *_condition_variable;
+        std::condition_variable *_condition_variable; //cv
 
     public:
-        Thread(int i, Thread *other, std::mutex *m, std::condition_variable *cv);
+        Thread(int i, Thread *other, std::mutex *m, std::condition_variable *cv); //constructor
 
-        bool isBusy();
+        bool isBusy(); //check if busy
 
-        void runMovement(MovingPlatform *moving, Player *player, float deltaTime);
+        void runMovement(MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list); //run threads 
 };

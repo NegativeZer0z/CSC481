@@ -73,7 +73,7 @@ void Player::updateTexture(int x, int y) {
 bool Player::checkCollision(Entity& entity) {
     sf::FloatRect playerBounds = sprite.getGlobalBounds();
     sf::FloatRect entityBounds = entity.getGlobalBounds();
-    
+
     if(entityBounds.intersects(playerBounds)) {
 
         //bot collision
@@ -133,4 +133,3 @@ void Player::wallCollision() {
         setSpritePosition(sprite.getPosition().x, WINDOW_HEIGHT - sprite.getGlobalBounds().height);
     }
 }
-

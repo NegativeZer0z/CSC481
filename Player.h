@@ -3,10 +3,12 @@
 #include "Entity.h"
 #define MAGE_START_OFFSET 12 //offset to find the starting point for the texture for mage.png
 #define MAGE_LEFT_OFFSET 36 //offset to make the sprite smaller to match art for mage.png
-#define MAGE_BOT_OFFSET 2 //offset to make the bottom pixel line not appear for mage.png
+#define MAGE_BOT_OFFSET 2 //offset to make the bottom pixel line not appear for mage.png\
+
+//player physics 
 #define GRAVITY 9.18f
 #define MAX_VERTICAL_VELOCITY 8.f
-#define PLAYER_SPEED 1.f
+#define PLAYER_SPEED 120.f
 #define JUMP_HEIGHT 280.f
 
 class Player : public Entity {

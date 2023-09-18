@@ -3,17 +3,15 @@
 #include "Player.h"
 #include "MovingPlatform.h"
 #include "Thread.h"
-#include "Timeline.h"
 
-void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime)
-{
-    fe->runMovement(moving, player, deltaTime);
+void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list) {
+    fe->runMovement(moving, player, deltaTime, list);
 }
 
 int main() {
     sf::ContextSettings settings;
     settings.antialiasingLevel = 4;
-    
+
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Platformer", sf::Style::Default, settings);
 
     window.setFramerateLimit(60);
@@ -49,7 +47,7 @@ int main() {
     //downloaded and utilize the "mage walking poses sheet copy.png"
     player.initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
 
-    int64_t deltaTime = 0;
+    float deltaTime = 0.f;
 
     //set up default view for the window
     //Referenced from the SFML view page
@@ -61,19 +59,21 @@ int main() {
     view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
     window.setView(view);
 
-    Timeline global(nullptr, 16);
-    int64_t lastTime = global.getTime();
-
     //switch between the two scaling modes, false = proportional, true = constant
     bool mode = false;
+
+    std::vector<Entity> list;
+    list.push_back(moving);
+    list.push_back(floor);
+    list.push_back(platform);
+
+    std::vector<MovingPlatform> movingList;
+    movingList.push_back(moving);
 
     //keep the window open while program is running
     while(true) {
 
-        //deltaTime = clock.restart().asSeconds();
-        int64_t currTime = global.getTime();
-        deltaTime = currTime - lastTime;
-        lastTime = currTime;
+        deltaTime = clock.restart().asSeconds();
 
         sf::Event event; //checking for window events
 
@@ -81,7 +81,7 @@ int main() {
 
             if(event.type == sf::Event::Closed) { //check close window event
                 window.close();
-                exit(0);
+                exit(1);
             }
             if(event.type == sf::Event::KeyPressed) {
                 if(event.key.code == sf::Keyboard::Z) { //if z key is pressed switch modes between constant and proportional
@@ -103,27 +103,24 @@ int main() {
         }
 
         //update the state of the moving platform and player
-        moving.update(deltaTime);
-        player.update(deltaTime);
+        
+        std::mutex m;
+        std::condition_variable cv;
 
-        // std::mutex m;
-        // std::condition_variable cv;
-        // Thread t1(0, NULL, &m, &cv);
-        // Thread t2(1, &t1, &m, &cv);
+        Thread t1(0, NULL, &m, &cv);
+        Thread t2(1, &t1, &m, &cv);
 
-        // std::thread first(run_wrapper, &t1, &moving, &player, deltaTime);
-        // std::thread second(run_wrapper, &t2, &moving, &player, deltaTime);
+        std::thread first(run_wrapper, &t1, &moving, &player, deltaTime, std::ref(list));
+        std::thread second(run_wrapper, &t2, &moving, &player, deltaTime, std::ref(list));
 
-        // first.join();
-        // second.join();
+        first.join();
+        second.join();
 
-        player.checkCollision(floor);
-        player.wallCollision();
-        player.checkCollision(platform);
-        moving.checkCollision(player);
-        player.checkCollision(moving);
-
-        moving.checkBoundaries();
+        //player.wallCollision();
+        //player.checkCollision(platform);
+        // moving.checkCollision(player);
+        // player.checkCollision(moving);
+        //player.checkCollision(list[1]);
 
         //clear window for drawing
         window.clear(sf::Color::Black);

@@ -19,6 +19,7 @@ bool MovingPlatform::checkBoundaries() {
 void MovingPlatform::update(float deltaTime) {
     velocity = direction * speed * deltaTime;
     moveSprite(velocity);
+    checkBoundaries();
 }
 
 bool MovingPlatform::checkCollision(Entity& entity) {
