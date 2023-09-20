@@ -79,7 +79,7 @@ int main() {
         //calc frame delta
         float currTime = global.getTime();
         deltaTime = currTime - lastTime;
-        std::cout << "curr " << currTime << " last " << lastTime << std::endl;
+        //std::cout << "curr " << currTime << " last " << lastTime << std::endl;
         lastTime = currTime;
 
         sf::Event event; //checking for window events
@@ -104,11 +104,12 @@ int main() {
                 if(event.key.code == sf::Keyboard::P) { //pause and unpause the game when the p key is pressed
                     if(global.isPaused()) { //game is paused so unpause
                         global.unpause();
-                        printf("unpaused\n");
+                        lastTime = global.getTime();
+                        //printf("unpaused\n");
                     }
                     else { //game is unpaused to pause
                         global.pause();
-                        printf("paused\n");
+                        //printf("paused\n");
                     }
                 }
                 if(event.key.code == sf::Keyboard::J) { //change speed to 0.5 by pressing J
@@ -139,6 +140,7 @@ int main() {
             deltaTime *= 2.0;
         }
 
+        //check to see if game is paused
         if(global.isPaused()) {
             deltaTime = 0.0;
         }

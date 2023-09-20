@@ -15,8 +15,6 @@ float Timeline::getTime() {
 
     float time = 0.0f;
 
-    //FIX: unpausing gets me a negative time
-
     //check to see if there is an anchor (global), in own timeline
     if(anchor == nullptr) {
         time = ((clock.getElapsedTime().asSeconds() - startTime - elapsedPausedTime) / tic);
@@ -40,7 +38,7 @@ void Timeline::unpause() {
     std::lock_guard<std::mutex> lock(m);
     paused = false;
     elapsedPausedTime = clock.getElapsedTime().asSeconds() - lastPausedTime;
-    std::cout << "elapsed " << elapsedPausedTime << std::endl;
+    //std::cout << "elapsed " << elapsedPausedTime << std::endl;
     //elapsedPausedTime = std::chrono::system_clock::now() - lastPausedTime;
 }
 
