@@ -3,7 +3,7 @@
 #include <condition_variable>
 #include <thread>
 #include <SFML/System.hpp>
-#include "Entity.h"
+#include <iostream>
 
 class Timeline {
 

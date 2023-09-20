@@ -37,6 +37,10 @@ void Player::update(float deltaTime) {
     }
 
     velocity.y += GRAVITY * deltaTime; //apply gravity
+    if(deltaTime == 0) {
+        velocity.x = 0.0f;
+        velocity.y = 0.0f;
+    }
     moveSprite(velocity);
 }
 

@@ -14,15 +14,12 @@ float Timeline::getTime() {
     std::lock_guard<std::mutex> lock(m);
 
     float time = 0.0f;
-    
-    //check to see if the game is paused or not initially (fix this)
-    if(paused) {
-        return time;
-    }
+
+    //FIX: unpausing gets me a negative time
 
     //check to see if there is an anchor (global), in own timeline
     if(anchor == nullptr) {
-        time = ((clock.getElapsedTime().asSeconds() - startTime) / tic) - elapsedPausedTime;
+        time = ((clock.getElapsedTime().asSeconds() - startTime - elapsedPausedTime) / tic);
         return time;
     }
     else { //has anchor, in anchor timeline
@@ -43,6 +40,7 @@ void Timeline::unpause() {
     std::lock_guard<std::mutex> lock(m);
     paused = false;
     elapsedPausedTime = clock.getElapsedTime().asSeconds() - lastPausedTime;
+    std::cout << "elapsed " << elapsedPausedTime << std::endl;
     //elapsedPausedTime = std::chrono::system_clock::now() - lastPausedTime;
 }
 

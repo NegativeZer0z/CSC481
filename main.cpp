@@ -32,9 +32,6 @@ int main() {
     //the base floor of the game
     StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
 
-    //for calculating how many seconds has passed
-    //sf::Clock clock;
-
     //both platforms and the floor uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
     //https://opengameart.org/node/8054
@@ -82,8 +79,8 @@ int main() {
         //calc frame delta
         float currTime = global.getTime();
         deltaTime = currTime - lastTime;
+        std::cout << "curr " << currTime << " last " << lastTime << std::endl;
         lastTime = currTime;
-        //deltaTime = clock.restart().asSeconds();
 
         sf::Event event; //checking for window events
 
@@ -104,12 +101,14 @@ int main() {
                         mode = true;
                     }
                 }
-                if(event.key.code == sf::Keyboard::P) { //pause and unpause the game when the p key is pressed (this needs fixing idk)
+                if(event.key.code == sf::Keyboard::P) { //pause and unpause the game when the p key is pressed
                     if(global.isPaused()) { //game is paused so unpause
                         global.unpause();
+                        printf("unpaused\n");
                     }
                     else { //game is unpaused to pause
                         global.pause();
+                        printf("paused\n");
                     }
                 }
                 if(event.key.code == sf::Keyboard::J) { //change speed to 0.5 by pressing J
@@ -138,6 +137,10 @@ int main() {
         }
         else if(fast) {
             deltaTime *= 2.0;
+        }
+
+        if(global.isPaused()) {
+            deltaTime = 0.0;
         }
 
         //update the state of the moving platform and player with threads and check collision
