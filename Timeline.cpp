@@ -4,40 +4,46 @@ Timeline::Timeline(Timeline *anchor, int64_t tic) {
     this->anchor = anchor;
     this->tic = tic;
     paused = false;
-    startTime = std::chrono::system_clock::now();
+    //startTime = std::chrono::system_clock::now();
+    startTime = clock.getElapsedTime().asSeconds();
+    elapsedPausedTime = 0.0f;
+    lastPausedTime = 0.0f;
 }
 
-int64_t Timeline::getTime() {
+float Timeline::getTime() {
     std::lock_guard<std::mutex> lock(m);
 
-    if (paused) {
+    float time = 0.0f;
+    
+    //check to see if the game is paused or not initially (fix this)
+    if(paused) {
+        return time;
+    }
 
-        return std::chrono::duration_cast<std::chrono::seconds>(lastPausedTime - startTime).count();
-    } 
-    else {
-        //find total time elapsed
-        int64_t elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count();
-
-        //subtract anchor timeline
-        if (anchor != nullptr) {
-            elapsed -= anchor->getTime();
-        }
-
-        elapsed = elapsed / tic;
-        return elapsed;
+    //check to see if there is an anchor (global), in own timeline
+    if(anchor == nullptr) {
+        time = ((clock.getElapsedTime().asSeconds() - startTime) / tic) - elapsedPausedTime;
+        return time;
+    }
+    else { //has anchor, in anchor timeline
+        time = ((*anchor).getTime() - startTime - elapsedPausedTime) / tic;
+        return time;
     }
 }
 
 void Timeline::pause() {
     std::lock_guard<std::mutex> lock(m);
-    lastPausedTime = std::chrono::system_clock::now();
     paused = true;
+    lastPausedTime = clock.getElapsedTime().asSeconds();
+    elapsedPausedTime = 0.0f;
+    //lastPausedTime = std::chrono::system_clock::now();
 }
 
 void Timeline::unpause() {
     std::lock_guard<std::mutex> lock(m);
-    elapsedPausedTime = std::chrono::system_clock::now() - lastPausedTime;
     paused = false;
+    elapsedPausedTime = clock.getElapsedTime().asSeconds() - lastPausedTime;
+    //elapsedPausedTime = std::chrono::system_clock::now() - lastPausedTime;
 }
 
 void Timeline::changeTic(int tic) {

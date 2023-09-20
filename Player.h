@@ -6,10 +6,10 @@
 #define MAGE_BOT_OFFSET 2 //offset to make the bottom pixel line not appear for mage.png\
 
 //player physics 
-#define GRAVITY 9.18f
+#define GRAVITY 740.18f
 #define MAX_VERTICAL_VELOCITY 8.f
-#define PLAYER_SPEED 120.f
-#define JUMP_HEIGHT 280.f
+#define PLAYER_SPEED 6600.f
+#define JUMP_HEIGHT 20280.f
 
 class Player : public Entity {
     

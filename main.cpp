@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "MovingPlatform.h"
 #include "Thread.h"
+#include "Timeline.h"
 
 void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list) {
     fe->runMovement(moving, player, deltaTime, list);
@@ -20,7 +21,7 @@ int main() {
     window.setPosition(sf::Vector2i(230, 80));
 
     //creates a moving platform
-    MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 50.0f, 40.f, 0.f);
+    MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
 
     //creats a static platform
     GeneralPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
@@ -32,7 +33,7 @@ int main() {
     StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
 
     //for calculating how many seconds has passed
-    sf::Clock clock;
+    //sf::Clock clock;
 
     //both platforms and the floor uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
@@ -62,14 +63,27 @@ int main() {
     //switch between the two scaling modes, false = proportional, true = constant
     bool mode = false;
 
+    //push all static platforms to a list
     std::vector<Entity> list;
     list.push_back(floor);
     list.push_back(platform);
 
+    //init timeline
+    Timeline global(nullptr, 64);
+    float lastTime = global.getTime();
+
+    //booleans to check 0.5, 1.0, and 2.0x speed for timeline
+    bool slow = false;
+    bool fast = false;
+
     //keep the window open while program is running
     while(true) {
 
-        deltaTime = clock.restart().asSeconds();
+        //calc frame delta
+        float currTime = global.getTime();
+        deltaTime = currTime - lastTime;
+        lastTime = currTime;
+        //deltaTime = clock.restart().asSeconds();
 
         sf::Event event; //checking for window events
 
@@ -90,6 +104,26 @@ int main() {
                         mode = true;
                     }
                 }
+                if(event.key.code == sf::Keyboard::P) { //pause and unpause the game when the p key is pressed (this needs fixing idk)
+                    if(global.isPaused()) { //game is paused so unpause
+                        global.unpause();
+                    }
+                    else { //game is unpaused to pause
+                        global.pause();
+                    }
+                }
+                if(event.key.code == sf::Keyboard::J) { //change speed to 0.5 by pressing J
+                    slow = true;
+                    fast = false;
+                }
+                if(event.key.code == sf::Keyboard::K) { //change speed to 1.0 by pressing K
+                    slow = false;
+                    fast = false;
+                }
+                if(event.key.code == sf::Keyboard::L) { //change speed to 2.0 by pressing L
+                    slow = false;
+                    fast = true;
+                }
             }
             if(mode && event.type == sf::Event::Resized) {
                 //make a new view with the proper size and set window view to it
@@ -98,8 +132,15 @@ int main() {
             }
         }
 
-        //update the state of the moving platform and player
-        
+        //speed up application to deltaTime
+        if(slow) {
+            deltaTime *= 0.5;
+        }
+        else if(fast) {
+            deltaTime *= 2.0;
+        }
+
+        //update the state of the moving platform and player with threads and check collision
         std::mutex m;
         std::condition_variable cv;
 
