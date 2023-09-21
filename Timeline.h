@@ -1,4 +1,3 @@
-#include <chrono>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
@@ -9,12 +8,6 @@ class Timeline {
 
     private:
         std::mutex m; //mutex due to being multithreaded and user can change tics
-
-        // std::chrono::time_point<std::chrono::system_clock> startTime;
-        
-        // std::chrono::duration<int64_t, std::nano> elapsedPausedTime;
-
-        // std::chrono::time_point<std::chrono::system_clock> lastPausedTime;
 
         int64_t tic; //the tic size
 

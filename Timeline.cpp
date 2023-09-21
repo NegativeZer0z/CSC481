@@ -4,7 +4,6 @@ Timeline::Timeline(Timeline *anchor, int64_t tic) {
     this->anchor = anchor;
     this->tic = tic;
     paused = false;
-    //startTime = std::chrono::system_clock::now();
     startTime = clock.getElapsedTime().asSeconds();
     elapsedPausedTime = 0.0f;
     lastPausedTime = 0.0f;
@@ -31,7 +30,6 @@ void Timeline::pause() {
     paused = true;
     lastPausedTime = clock.getElapsedTime().asSeconds();
     elapsedPausedTime = 0.0f;
-    //lastPausedTime = std::chrono::system_clock::now();
 }
 
 void Timeline::unpause() {
@@ -39,7 +37,6 @@ void Timeline::unpause() {
     paused = false;
     elapsedPausedTime = clock.getElapsedTime().asSeconds() - lastPausedTime;
     //std::cout << "elapsed " << elapsedPausedTime << std::endl;
-    //elapsedPausedTime = std::chrono::system_clock::now() - lastPausedTime;
 }
 
 void Timeline::changeTic(int tic) {

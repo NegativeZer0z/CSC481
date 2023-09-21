@@ -140,7 +140,6 @@ int main() {
             deltaTime *= 2.0;
         }
 
-        //check to see if game is paused
         if(global.isPaused()) {
             deltaTime = 0.0;
         }
