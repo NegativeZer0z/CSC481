@@ -20,13 +20,13 @@ bool Thread::isBusy() {
 void Thread::runMovement(MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list) {
     if(identity == 0) { //movement
         try {
-            std::unique_lock<std::mutex> cv_lock(*_mutex);
+            std::unique_lock<std::mutex> cv_lock(*this->_mutex);
             (*player).update(deltaTime);
             (*moving).update(deltaTime);
             busy = !busy;
         }
         catch(...) {
-            std::cerr << "Thread " << identity << "caught exception platform." << std::endl;
+            std::cerr << "Thread " << identity << "caught exception movement." << std::endl;
         }
     }
     else { //identity == 1 collision
@@ -42,7 +42,7 @@ void Thread::runMovement(MovingPlatform *moving, Player *player, float deltaTime
                 }
             }
             catch(...) {
-                std::cerr << "Thread " << identity << "caught exception player." << std::endl;
+                std::cerr << "Thread " << identity << "caught exception collision." << std::endl;
             }
         }
     }
