@@ -69,10 +69,6 @@ int main() {
     Timeline global(nullptr, 64);
     float lastTime = global.getTime();
 
-    //booleans to check 0.5, 1.0, and 2.0x speed for timeline
-    bool slow = false;
-    bool fast = false;
-
     //keep the window open while program is running
     while(true) {
 
@@ -105,24 +101,22 @@ int main() {
                     if(global.isPaused()) { //game is paused so unpause
                         global.unpause();
                         lastTime = global.getTime();
-                        //printf("unpaused\n");
                     }
-                    else { //game is unpaused to pause
+                    else { //game is unpaused so pause
                         global.pause();
-                        //printf("paused\n");
                     }
                 }
                 if(event.key.code == sf::Keyboard::J) { //change speed to 0.5 by pressing J
-                    slow = true;
-                    fast = false;
+                    global.changeTic(128);
+                    lastTime = global.getTime();
                 }
                 if(event.key.code == sf::Keyboard::K) { //change speed to 1.0 by pressing K
-                    slow = false;
-                    fast = false;
+                    global.changeTic(64);
+                    lastTime = global.getTime();
                 }
                 if(event.key.code == sf::Keyboard::L) { //change speed to 2.0 by pressing L
-                    slow = false;
-                    fast = true;
+                    global.changeTic(32);
+                    lastTime = global.getTime();
                 }
             }
             if(mode && event.type == sf::Event::Resized) {
@@ -130,14 +124,6 @@ int main() {
                 sf::FloatRect view2(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(view2));
             }
-        }
-
-        //speed up application to deltaTime
-        if(slow) {
-            deltaTime *= 0.5;
-        }
-        else if(fast) {
-            deltaTime *= 2.0;
         }
 
         if(global.isPaused()) {
