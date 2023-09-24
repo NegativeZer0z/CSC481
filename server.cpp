@@ -28,6 +28,57 @@ int main() {
         socket.recv(reply, REPLY);
         std::string message = reply.to_string();
 
+        // if(message == "getPlayers") {
+        //     std::string temp = "temp"; //(2)
+        //     zmq::message_t tempReply(temp.size());
+        //     memcpy(tempReply.data(), temp.data(), temp.size());
+        //     socket.send(tempReply, SEND);
+
+        //     zmq::message_t resp; //(3)
+        //     socket.recv(resp, REPLY);
+        //     int cap = std::stoi(resp.to_string());
+
+        //     if(cap < playerList.size()) {
+        //         std::string mess = "updatePlayers";
+        //         zmq::message_t messReply(mess.size());
+        //         memcpy(messReply.data(), mess.data(), mess.size());
+        //         socket.send(messReply, SEND);
+
+        //         zmq::message_t tempId;
+        //         socket.recv(tempId, REPLY);
+        //         int id = std::stoi(tempId.to_string());
+        //         int size = playerList.size();
+
+        //         //maxCap send
+        //         std::string mess2 = std::to_string(size);
+        //         zmq::message_t mess2R(mess2.size());
+        //         memcpy(mess2R.data(), mess2.data(), mess2.size());
+        //         socket.send(mess2R, SEND);
+
+        //         zmq::message_t useless;
+        //         socket.recv(useless, REPLY);
+
+        //         for(auto p : playerList) {
+        //             int otherId = p.first;
+        //             if(otherId != id) {
+        //                 std::string over = std::to_string(otherId);
+        //                 zmq::message_t otherR(over.size());
+        //                 memcpy(otherR.data(), over.data(), over.size());
+        //                 socket.send(otherR, SEND);
+        //             }
+        //             else {
+        //                 std::string nothing = "nothing";
+        //                 zmq::message_t nothingR(nothing.size());
+        //                 memcpy(nothingR.data(), nothing.data(), nothing.size());
+        //                 socket.send(nothingR, SEND);
+        //             }
+        //             socket.recv(useless, REPLY);
+        //         }
+        //     }
+        //     else {
+        //         socket.send(tempReply, SEND);
+        //     }
+        // }
         //initailize the client by giving it an unique id
         if(message == "init") {
             std::string str = std::to_string(nextId);
@@ -37,7 +88,9 @@ int main() {
 
             //add player and client id to the map and increment nextId for next client
             if(playerList.find(nextId) == playerList.end()) {
-                playerList.insert(std::make_pair(nextId, Player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f))));
+                Player temp(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f));
+                temp.initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
+                playerList.insert(std::make_pair(nextId, temp));
             }
             ++nextId;
         }
