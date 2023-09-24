@@ -10,3 +10,6 @@ Timeline.o
 StaticPlatform.o
 platformer
 main.o
+client
+server
+client.o

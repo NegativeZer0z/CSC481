@@ -24,7 +24,7 @@ int main() {
     MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
 
     //creats a static platform
-    GeneralPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
+    StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
 
     //creates a player
     Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f));

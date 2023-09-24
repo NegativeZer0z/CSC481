@@ -29,4 +29,7 @@ class MovingPlatform : public GeneralPlatform {
 
         //collision for the moving platform, carry things when on top of it
         bool checkCollision(Entity& entity);
+
+        //get the direction the platform is moving in
+        sf::Vector2f getDirection();
 };

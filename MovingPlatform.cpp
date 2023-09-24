@@ -39,3 +39,7 @@ bool MovingPlatform::checkCollision(Entity& entity) {
     }
     return false;
 }
+
+sf::Vector2f MovingPlatform::getDirection() {
+    return direction;
+}
