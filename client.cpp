@@ -106,55 +106,10 @@ int main() {
     float lastTime = std::stof(initTime.to_string());
 
     bool isPaused = false;
-    bool wtf = false;
 
     while(true) {
 
-        //update the client about all other players/clients in the game (1)
-        // std::string getPlayers = "getPlayers";
-        // zmq::message_t playerUp(getPlayers.size());
-        // memcpy(playerUp.data(), getPlayers.data(), getPlayers.size());
-        // socket.send(playerUp, SEND);
-
-        // zmq::message_t rtnPlayer; //(2)
-        // socket.recv(rtnPlayer, REPLY);
-        
-        // std::string cap = std::to_string(clientNum); //(3)
-        // zmq::message_t capUp(cap.size());
-        // memcpy(capUp.data(), cap.data(), cap.size());
-        // socket.send(capUp, SEND);
-
-        // //message to check if we have to update our map of players
-        // zmq::message_t mess;
-        // socket.recv(mess, REPLY);
-        // if(mess.to_string() == "updatePlayers") {
-        //     std::string mess2 = std::to_string(playerId);
-        //     zmq::message_t mess2R(mess2.size());
-        //     memcpy(mess2R.data(), mess2.data(), mess2.size());
-        //     socket.send(mess2R, SEND);
-            
-        //     zmq::message_t maxCap;
-        //     socket.recv(maxCap, REPLY);
-        //     int max = std::stoi(maxCap.to_string());
-
-        //     std::string useless = "useless";
-        //     zmq::message_t uselessR(useless.size());
-        //     memcpy(uselessR.data(), useless.data(), useless.size());
-        //     socket.send(uselessR, SEND);
-
-        //     for(int i = 0; i < max; ++i) {
-        //         zmq::message_t mess3;
-        //         socket.recv(mess3, REPLY);
-        //         std::string otherId = mess3.to_string();
-        //         if(otherId != "nothing") {
-        //             int id = std::stoi(otherId);
-        //             clients.insert(std::make_pair(id, new Player(sf::Vector2f(300.f, 550.f), sf::Vector2f(28.f, 62.f))));
-        //             clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
-        //         }
-        //         socket.send(uselessR, SEND);
-        //     }
-        //     clientNum = max;
-        // }
+        //HOW DO I ADD OTHER CLIENTS TO THIS CLIENT AND UPDATE THEM
 
         sf::Event event; //checking for window events
 
@@ -268,27 +223,21 @@ int main() {
         //clear window for drawing
         window.clear(sf::Color::Black);
 
-        Player *p = clients.at(playerId);
+        //Player *p = clients.at(playerId);
         for(auto i : clients) {
-            int id = i.first;
-            if(id != playerId) {
-                i.second->update(deltaTime);
-            }
+            i.second->update(deltaTime);
         }
         
-        p->update(deltaTime);
+        //p->update(deltaTime);
         moving.update(deltaTime);
         player.checkCollision(floor);
         player.checkCollision(platform);
 
         //draw/render everything
         for(auto i : clients) {
-            int id = i.first;
-            if(id != playerId) {
-                i.second->render(window);
-            }
+            i.second->render(window);
         }
-        p->render(window);
+        //p->render(window);
         platform.render(window);
         floor.render(window);
         moving.render(window);
