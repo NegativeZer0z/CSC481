@@ -26,7 +26,11 @@ To run the game:
         g++ -c Entity.cpp
         g++ main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system
 
-    6. Enter "./platformer" into the terminal
+    6. Enter "make client" into the terminal and then after that enter "make server" into the terminal\
+
+    7a. To run the server/client multiplayer game enter "./server" on one terminal and "./client" on another terminal
+
+    7b. Enter "./platformer" into the terminal to do singleplayer
         Note: the entire window may not be on your screen on the first execution of it, if so drag it on the screen
 
 
@@ -35,7 +39,9 @@ Game Controls:
     Move right: "right arrow" or "d"
     Jump: "Space", "w", or "up arrow"
     Switch between constant and proportional scaling: "z"
-
+    Speedup: "L"
+    Normal Speed: "K"
+    Half Speed: "J"
 
 
 Texture/Art Credits:

@@ -26,7 +26,8 @@ int main() {
     while(true) {
         zmq::message_t reply;
         socket.recv(reply, REPLY);
-        std::string message = reply.to_string(); //get the message sent
+        std::string message = reply.to_string(); //get the message sent(1)
+        //std::cout << message << std::endl;
 
         //initailize the client by giving it an unique id
         if(message == "init") {
@@ -44,9 +45,47 @@ int main() {
             ++nextId;
         }
         else {
+            if(message == "getClient") { //somewhere error
+                //(2)
+                std::string cap = std::to_string(playerList.size());
+                zmq::message_t capS(cap.size());
+                memcpy(capS.data(), cap.data(), cap.size());
+                socket.send(capS, SEND);
 
+                //(3)
+                zmq::message_t checking;
+                socket.recv(checking, REPLY);
+                
+                if(checking.to_string() == "garb") {
+                    //(4)
+                    std::string garbage = "garb";
+                    zmq::message_t garbageS(garbage.size());
+                    memcpy(garbageS.data(), garbage.data(), garbage.size());
+                    socket.send(garbageS, SEND);
+                }
+                else {
+                    //(5)
+                    for(auto i : playerList) {
+                        //create a string of the players id, x and y position
+                        std::string id = std::to_string(i.first);
+                        std::string x = std::to_string(i.second->getPosition().x);
+                        std::string y = std::to_string(i.second->getPosition().y);
+                        std::string info = id + " " + x + " " + y;
+
+                        //send over this info to the client (6)
+                        zmq::message_t infoS(info.size());
+                        memcpy(infoS.data(), info.data(), info.size());
+                        socket.send(infoS, SEND);
+
+                        //receive message of getting the info (7)
+                        zmq::message_t useless;
+                        socket.recv(useless, REPLY);
+                    }
+                }
+            }
+            
             //getTime message so return time back to the client
-            if(message == "getTime") {
+            else if(message == "getTime") {
                 float time = global.getTime(); //get the time and convert it to a string
                 std::string str = std::to_string(time);
 

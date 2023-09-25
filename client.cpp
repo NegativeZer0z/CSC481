@@ -21,7 +21,7 @@ int main() {
     //player id passed to the server to update position for this player for other clients
     int playerId = 0;
 
-    //number of clients connected to the server
+    //number of clients connected to the server, init to 1 for this client
     int clientNum = 1;
     
     //send message to server to get the player id for this client
@@ -52,7 +52,7 @@ int main() {
     MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
 
     //creates the current client's player and add to the list of players
-    Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f));
+    Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f)); //temp here for testing, should add to the map in the loop of each new client
     std::unordered_map<int, Player*> clients;
     clients.insert(std::make_pair(playerId, &player));
 
@@ -109,7 +109,58 @@ int main() {
 
     while(true) {
 
-        //HOW DO I ADD OTHER CLIENTS TO THIS CLIENT AND UPDATE THEM
+        //add the clients to the clients map FIX
+        std::string getClient = "getClient"; //(1)
+        zmq::message_t getClientS(getClient.size());
+        memcpy(getClientS.data(), getClient.data(), getClient.size());
+        socket.send(getClientS, SEND);
+
+        //(2)
+        zmq::message_t cap;
+        socket.recv(cap, REPLY);
+        int capacity = std::stoi(cap.to_string());
+
+        if(clientNum < capacity) { //update our list of players
+            //(3) send a message not garb to get players
+            std::string temp = "temp";
+            zmq::message_t updateTemp(temp.size());
+            memcpy(updateTemp.data(), temp.data(), temp.size());
+            socket.send(updateTemp, SEND);
+
+            //(5) update our list
+            for(int i = 0; i < capacity; ++i) {
+                //get the info of the player (6)
+                zmq::message_t rec;
+                socket.recv(rec, REPLY);
+
+                int id;
+                float x,y;
+                std::string info = rec.to_string();
+                sscanf(info.c_str(), "%d %f %f", &id, &x, &y);
+
+                if(clients.find(id) == clients.end()) { //find the id, if not in the map then add the player
+                    clients.insert(std::make_pair(id, new Player(sf::Vector2f(x, y), sf::Vector2f(28.f, 62.f))));
+                    clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
+                }
+
+                //(7) send the message of got it
+                std::string mess = "got it";
+                zmq::message_t mess2(mess.size());
+                memcpy(mess2.data(), mess.data(), mess.size());
+                socket.send(mess2, SEND);
+            }
+        }
+        else {
+            //(3) nothing to do
+            std::string garbage = "garb";
+            zmq::message_t garbageS(garbage.size());
+            memcpy(garbageS.data(), garbage.data(), garbage.size());
+            socket.send(garbageS, SEND);
+
+            //(4)
+            zmq::message_t bad;
+            socket.recv(bad, REPLY);
+        }
 
         sf::Event event; //checking for window events
 
@@ -223,7 +274,7 @@ int main() {
         //clear window for drawing
         window.clear(sf::Color::Black);
 
-        //Player *p = clients.at(playerId);
+        //move all the players
         for(auto i : clients) {
             i.second->update(deltaTime);
         }
@@ -237,7 +288,6 @@ int main() {
         for(auto i : clients) {
             i.second->render(window);
         }
-        //p->render(window);
         platform.render(window);
         floor.render(window);
         moving.render(window);
