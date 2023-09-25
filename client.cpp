@@ -21,8 +21,8 @@ int main() {
     //player id passed to the server to update position for this player for other clients
     int playerId = 0;
 
-    //number of clients connected to the server, init to 1 for this client
-    int clientNum = 1;
+    //number of clients connected to the server
+    int clientNum = 0;
     
     //send message to server to get the player id for this client
     std::string init = "init";
@@ -52,9 +52,9 @@ int main() {
     MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
 
     //creates the current client's player and add to the list of players
-    Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f)); //temp here for testing, should add to the map in the loop of each new client
+    //Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f)); //temp here for testing, should add to the map in the loop of each new client
     std::unordered_map<int, Player*> clients;
-    clients.insert(std::make_pair(playerId, &player));
+    //clients.insert(std::make_pair(playerId, &player));
 
     //the base floor of the game
     StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
@@ -72,7 +72,7 @@ int main() {
     //"Four characters: My LPC entries" by Redshrike licensed CC-BY 3.0, CC-BY-SA 3.0, OGA-BY 3.0
     //https://opengameart.org/content/four-characters-my-lpc-entries
     //downloaded and utilize the "mage walking poses sheet copy.png"
-    player.initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
+    //player.initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
 
     //deltaTime for movement/velocity of entities
     float deltaTime = 0.f;
@@ -118,7 +118,7 @@ int main() {
         //(2)
         zmq::message_t cap;
         socket.recv(cap, REPLY);
-        int capacity = std::stoi(cap.to_string());
+        int capacity = std::stoi(cap.to_string()); //race condition?? when connecting multiple clients
 
         if(clientNum < capacity) { //update our list of players
             //(3) send a message not garb to get players
@@ -149,6 +149,10 @@ int main() {
                 memcpy(mess2.data(), mess.data(), mess.size());
                 socket.send(mess2, SEND);
             }
+            //extra receive, message doens't matter
+            zmq::message_t nothing;
+            socket.recv(nothing, REPLY);
+            clientNum = capacity;
         }
         else {
             //(3) nothing to do
@@ -277,12 +281,13 @@ int main() {
         //move all the players
         for(auto i : clients) {
             i.second->update(deltaTime);
+            i.second->checkCollision(floor);
         }
         
         //p->update(deltaTime);
         moving.update(deltaTime);
-        player.checkCollision(floor);
-        player.checkCollision(platform);
+        //player.checkCollision(floor);
+        //player.checkCollision(platform);
 
         //draw/render everything
         for(auto i : clients) {

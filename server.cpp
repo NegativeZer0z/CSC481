@@ -1,8 +1,5 @@
 #include <SFML/Window.hpp>
-#include "StaticPlatform.h"
 #include "Player.h"
-#include "MovingPlatform.h"
-#include "Thread.h"
 #include "Timeline.h"
 #include <zmq.hpp>
 #include <unordered_map>
@@ -81,6 +78,10 @@ int main() {
                         zmq::message_t useless;
                         socket.recv(useless, REPLY);
                     }
+                    std::string str = "nothing";
+                    zmq::message_t nothing(str.size());
+                    memcpy(nothing.data(), str.data(), str.size());
+                    socket.send(nothing, SEND);
                 }
             }
             
