@@ -53,7 +53,7 @@ int main() {
 
     //creates the current client's player and add to the list of players
     //Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f)); //temp here for testing, should add to the map in the loop of each new client
-    std::unordered_map<int, Player*> clients;
+    //std::unordered_map<int, Player*> clients;
     //clients.insert(std::make_pair(playerId, &player));
 
     //the base floor of the game
@@ -106,64 +106,37 @@ int main() {
     float lastTime = std::stof(initTime.to_string());
 
     bool isPaused = false;
+    std::unordered_map<int, Player*> clients;
 
     while(true) {
 
-        //add the clients to the clients map FIX
+        //add the clients to the clients map
         std::string getClient = "getClient"; //(1)
         zmq::message_t getClientS(getClient.size());
         memcpy(getClientS.data(), getClient.data(), getClient.size());
-        socket.send(getClientS, SEND);
+        socket.send(getClientS, SEND); 
 
         //(2)
-        zmq::message_t cap;
-        socket.recv(cap, REPLY);
-        int capacity = std::stoi(cap.to_string()); //race condition?? when connecting multiple clients
+        zmq::message_t info; //how many clients in the server
+        socket.recv(info, REPLY);
+        std::string info2 = info.to_string();
+        //std::cout << info2 << std::endl;
+        int cap;
+        int pos; //current position of processing the string
+        sscanf(info2.c_str(), "%d %n", &cap, &pos);
+        const char *players = info2.c_str();
+        players += pos;
+        //std::cout << players << std::endl;
 
-        if(clientNum < capacity) { //update our list of players
-            //(3) send a message not garb to get players
-            std::string temp = "temp";
-            zmq::message_t updateTemp(temp.size());
-            memcpy(updateTemp.data(), temp.data(), temp.size());
-            socket.send(updateTemp, SEND);
-
-            //(5) update our list
-            for(int i = 0; i < capacity; ++i) {
-                //get the info of the player (6)
-                zmq::message_t rec;
-                socket.recv(rec, REPLY);
-
-                int id;
-                float x,y;
-                std::string info = rec.to_string();
-                sscanf(info.c_str(), "%d %f %f", &id, &x, &y);
-
-                if(clients.find(id) == clients.end()) { //find the id, if not in the map then add the player
-                    clients.insert(std::make_pair(id, new Player(sf::Vector2f(x, y), sf::Vector2f(28.f, 62.f))));
-                    clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
-                }
-
-                //(7) send the message of got it
-                std::string mess = "got it";
-                zmq::message_t mess2(mess.size());
-                memcpy(mess2.data(), mess.data(), mess.size());
-                socket.send(mess2, SEND);
+        for(int i = 0; i < cap; ++i) {
+            int id;
+            float x, y;
+            sscanf(players, "%d %f %f %n", &id, &x, &y, &pos);
+            players += pos;
+            if(clients.find(id) == clients.end()) {
+                clients.insert(std::make_pair(id, new Player(sf::Vector2f(x, y), sf::Vector2f(28.f, 62.f))));
+                clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
             }
-            //extra receive, message doens't matter
-            zmq::message_t nothing;
-            socket.recv(nothing, REPLY);
-            clientNum = capacity;
-        }
-        else {
-            //(3) nothing to do
-            std::string garbage = "garb";
-            zmq::message_t garbageS(garbage.size());
-            memcpy(garbageS.data(), garbage.data(), garbage.size());
-            socket.send(garbageS, SEND);
-
-            //(4)
-            zmq::message_t bad;
-            socket.recv(bad, REPLY);
         }
 
         sf::Event event; //checking for window events
@@ -284,10 +257,7 @@ int main() {
             i.second->checkCollision(floor);
         }
         
-        //p->update(deltaTime);
         moving.update(deltaTime);
-        //player.checkCollision(floor);
-        //player.checkCollision(platform);
 
         //draw/render everything
         for(auto i : clients) {
