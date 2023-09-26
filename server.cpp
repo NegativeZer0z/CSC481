@@ -3,6 +3,8 @@
 #include "Timeline.h"
 #include <zmq.hpp>
 #include <unordered_map>
+#include "StaticPlatform.h"
+#include "MovingPlatform.h"
 
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
@@ -17,8 +19,18 @@ int main() {
     std::unordered_map<int, Player*> playerList;
     int nextId = 1;
 
+    int64_t defaultTic = 64;
     //set up the timeline for the game
-    Timeline global(nullptr, 64);
+    Timeline global(nullptr, defaultTic);
+
+    StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
+    floor.initTexture("textures/grass.png");
+
+    StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
+    platform.initTexture("textures/grass.png");
+
+    MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+    moving.initTexture("textures/grass.png");
 
     while(true) {
         zmq::message_t reply;
@@ -40,6 +52,12 @@ int main() {
                 playerList.at(nextId)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
             }
             ++nextId;
+            // if(nextId > 2) {
+            //     int64_t currTic = global.getTic();
+            //     currTic += 32;
+            //     global.changeTic(currTic);
+            //     defaultTic = currTic;
+            // }
         }
         else {
             if(message == "getClient") { //somewhere error
@@ -106,8 +124,10 @@ int main() {
                 }
             }
             else if(message == "doubleTic") {
-                //slow the game down
-                global.changeTic(128);
+                //slow the game down by doubling tic
+                int64_t currTic = global.getTic();
+                currTic *= 2;
+                global.changeTic(currTic);
                 float time = global.getTime(); //update lastTime for the clients
                 std::string str = std::to_string(time);
                 zmq::message_t response(str.size());
@@ -116,7 +136,7 @@ int main() {
             }
             else if(message == "standardTic") {
                 //set the speed to standard
-                global.changeTic(64);
+                global.changeTic(defaultTic);
                 float time = global.getTime(); //update lastTime for the clients
                 std::string str = std::to_string(time);
                 zmq::message_t response(str.size());
@@ -124,13 +144,43 @@ int main() {
                 socket.send(response, SEND);
             }
             else if(message == "halfTic") {
-                //speed up the game
-                global.changeTic(32);
+                //speed up the game by halfing tic
+                int64_t currTic = global.getTic();
+                currTic /= 2;
+                global.changeTic(currTic);
                 float time = global.getTime(); //update lastTime for the clients
                 std::string str = std::to_string(time);
                 zmq::message_t response(str.size());
                 memcpy(response.data(), str.data(), str.size());
                 socket.send(response, SEND);
+            }
+            else { //if no other message means we got some time frame so update our entities
+                //update the players and platforms
+                float deltaTime = std::stof(message);
+                //condition to avoid spikes of super low deltaTime
+                if(deltaTime > 0.00005) {
+                    std::cout << deltaTime << std::endl;
+
+                    //update our players and platforms, had checking for collisions here but didn't always work
+                    //NOTE: game for some reason speeds up when new client connects
+                    moving.update(deltaTime);
+                    for(auto i : playerList) {
+                        i.second->update(deltaTime);
+                    }
+                }
+                //check for collisions, still buggy if there is multiple clients
+                for(auto i : playerList) {
+                    i.second->checkCollision(floor);
+                    i.second->checkCollision(platform);
+                    i.second->checkCollision(moving);
+                    i.second->wallCollision();
+                }
+
+                //garbage, but we need to send something
+                std::string garb = "garb";
+                zmq::message_t garbS(garb.size());
+                memcpy(garbS.data(), garb.data(), garb.size());
+                socket.send(garbS, SEND);
             }
         }
     }

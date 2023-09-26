@@ -35,4 +35,6 @@ class Timeline {
         void changeTic(int tic); //change the tic rate
 
         bool isPaused(); //check to see if the game is paused
+
+        int64_t getTic(); //return the current tic of timeline
 };

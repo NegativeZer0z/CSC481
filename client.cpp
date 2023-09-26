@@ -20,9 +20,6 @@ int main() {
 
     //player id passed to the server to update position for this player for other clients
     int playerId = 0;
-
-    //number of clients connected to the server
-    int clientNum = 0;
     
     //send message to server to get the player id for this client
     std::string init = "init";
@@ -106,9 +103,9 @@ int main() {
     float lastTime = std::stof(initTime.to_string());
 
     bool isPaused = false;
-    std::unordered_map<int, Player*> clients;
 
     while(true) {
+        std::unordered_map<int, Player*> clients;
 
         //add the clients to the clients map
         std::string getClient = "getClient"; //(1)
@@ -128,6 +125,7 @@ int main() {
         players += pos;
         //std::cout << players << std::endl;
 
+        //load in all of the players
         for(int i = 0; i < cap; ++i) {
             int id;
             float x, y;
@@ -251,10 +249,21 @@ int main() {
         //clear window for drawing
         window.clear(sf::Color::Black);
 
-        //move all the players
+        //pass in deltaTime to update server entties
+        std::string dt = std::to_string(deltaTime);
+        zmq::message_t dtpass(dt.size());
+        memcpy(dtpass.data(), dt.data(), dt.size());
+        socket.send(dtpass, SEND);
+
+        zmq::message_t noUse;
+        socket.recv(noUse, REPLY);
+
+        //collision checking don't know if necessary on client side
         for(auto i : clients) {
-            i.second->update(deltaTime);
             i.second->checkCollision(floor);
+            i.second->checkCollision(platform);
+            i.second->checkCollision(moving);
+            i.second->wallCollision();
         }
         
         moving.update(deltaTime);
