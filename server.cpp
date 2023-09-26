@@ -32,6 +32,9 @@ int main() {
     MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
     moving.initTexture("textures/grass.png");
 
+    bool fast = false;
+    bool slow = false;
+
     while(true) {
         zmq::message_t reply;
         socket.recv(reply, REPLY);
@@ -52,12 +55,7 @@ int main() {
                 playerList.at(nextId)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
             }
             ++nextId;
-            // if(nextId > 2) {
-            //     int64_t currTic = global.getTic();
-            //     currTic += 32;
-            //     global.changeTic(currTic);
-            //     defaultTic = currTic;
-            // }
+            std::cout << "connect" << std::endl;
         }
         else {
             if(message == "getClient") { //somewhere error
@@ -100,19 +98,14 @@ int main() {
             else if(message == "pause") { //pause message to pause and unpause the game
                 if(global.isPaused()) {
                     global.unpause(); //unpause and send a message to client to update lastTime
-                    std::string first = "wasPaused";
-                    zmq::message_t firstReply(first.size());
+                    std::string first = "wasPaused ";
+                    float time = global.getTime();
+                    first += std::to_string(time);
+
+                    //"wasPaused time" send over message
+                    zmq::message_t firstReply(first.size()); 
                     memcpy(firstReply.data(), first.data(), first.size());
                     socket.send(firstReply, SEND);
-
-                    zmq::message_t second;
-                    socket.recv(second, REPLY);
-
-                    float time = global.getTime(); //update lastTime for the clients
-                    std::string str = std::to_string(time);
-                    zmq::message_t response(str.size());
-                    memcpy(response.data(), str.data(), str.size());
-                    socket.send(response, SEND);
                 }
                 else {
                     //pause the game
@@ -127,7 +120,10 @@ int main() {
                 //slow the game down by doubling tic
                 int64_t currTic = global.getTic();
                 currTic *= 2;
-                global.changeTic(currTic);
+                //global.changeTic(currTic);
+                fast = false;
+                slow = true;
+
                 float time = global.getTime(); //update lastTime for the clients
                 std::string str = std::to_string(time);
                 zmq::message_t response(str.size());
@@ -136,8 +132,11 @@ int main() {
             }
             else if(message == "standardTic") {
                 //set the speed to standard
-                global.changeTic(defaultTic);
+                //global.changeTic(defaultTic);
+                fast = false;
+                slow = false;
                 float time = global.getTime(); //update lastTime for the clients
+
                 std::string str = std::to_string(time);
                 zmq::message_t response(str.size());
                 memcpy(response.data(), str.data(), str.size());
@@ -147,19 +146,50 @@ int main() {
                 //speed up the game by halfing tic
                 int64_t currTic = global.getTic();
                 currTic /= 2;
-                global.changeTic(currTic);
+                //global.changeTic(currTic);
+                fast = true;
+                slow = false;
+
                 float time = global.getTime(); //update lastTime for the clients
                 std::string str = std::to_string(time);
                 zmq::message_t response(str.size());
                 memcpy(response.data(), str.data(), str.size());
                 socket.send(response, SEND);
             }
+            else if(message == "disconnect") {
+                std::string tempMess = "getId";
+                zmq::message_t tempMessSend(tempMess.size());
+                memcpy(tempMessSend.data(), tempMess.data(), tempMess.size());
+                socket.send(tempMessSend, SEND);
+
+                zmq::message_t exitId;
+                socket.recv(exitId, REPLY);
+
+                int id = std::stoi(exitId.to_string());
+                playerList.erase(id);
+                socket.send(tempMessSend, SEND);
+            }
             else { //if no other message means we got some time frame so update our entities
                 //update the players and platforms
+                std::cout << message << std::endl;
                 float deltaTime = std::stof(message);
+                if(playerList.size() != 1) {
+                    deltaTime /= (playerList.size());
+                }
+
+                if(fast) {
+                    deltaTime *= 2;
+                }
+                else if(slow) {
+                    deltaTime /= 2;
+                }
+                else if(global.isPaused()) {
+                    deltaTime = 0;
+                }
+
                 //condition to avoid spikes of super low deltaTime
                 if(deltaTime > 0.00005) {
-                    std::cout << deltaTime << std::endl;
+                    //std::cout << deltaTime << std::endl;
 
                     //update our players and platforms, had checking for collisions here but didn't always work
                     //NOTE: game for some reason speeds up when new client connects

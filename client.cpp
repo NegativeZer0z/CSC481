@@ -104,6 +104,9 @@ int main() {
 
     bool isPaused = false;
 
+    bool fast = false;
+    bool slow = false;
+
     while(true) {
         std::unordered_map<int, Player*> clients;
 
@@ -156,6 +159,20 @@ int main() {
         while(window.pollEvent(event)) {
 
             if(event.type == sf::Event::Closed) { //check close window event
+                std::string dis = "disconnect";
+                zmq::message_t disSend(dis.size());
+                memcpy(disSend.data(), dis.data(), dis.size());
+                socket.send(disSend, SEND);
+
+                zmq::message_t exited;
+                socket.recv(exited, REPLY);
+
+                std::string discId = std::to_string(playerId);
+                zmq::message_t discIdSend(discId.size());
+                memcpy(discIdSend.data(), discId.data(), discId.size());
+                socket.send(discIdSend, SEND);
+
+                socket.recv(exited, REPLY);
                 window.close();
                 exit(1);
             }
@@ -179,17 +196,15 @@ int main() {
                     zmq::message_t reply;
                     socket.recv(reply, REPLY);
                     p = reply.to_string();
+                    float dt;
+
+                    char *s = (char *)malloc(p.length());
+                    sscanf(p.c_str(), "%s %f", s, &dt);
+                    std::string s2 = s;
 
                     //update the last Time for next frame of deltaTime and set isPaused to correct boolean
-                    if(p == "wasPaused") {
-                        std::string temp = "updateTime";
-                        zmq::message_t updateTemp(temp.size());
-                        memcpy(updateTemp.data(), temp.data(), temp.size());
-                        socket.send(updateTemp, SEND);
-
-                        zmq::message_t updateReply;
-                        socket.recv(updateReply, REPLY);
-                        lastTime = std::stof(updateReply.to_string());
+                    if(s2 == "wasPaused") {
+                        lastTime = dt;
                         isPaused = false;
                     }
                     else {
@@ -204,6 +219,9 @@ int main() {
                     memcpy(halfTime.data(), half.data(), half.size());
                     socket.send(halfTime, SEND);
 
+                    fast = false;
+                    slow = true;
+
                     //update lastTime
                     zmq::message_t resp;
                     socket.recv(resp, REPLY);
@@ -216,6 +234,9 @@ int main() {
                     memcpy(halfTime.data(), half.data(), half.size());
                     socket.send(halfTime, SEND);
 
+                    fast = false;
+                    slow = false;
+
                     //update lastTime
                     zmq::message_t resp;
                     socket.recv(resp, REPLY);
@@ -227,6 +248,9 @@ int main() {
                     zmq::message_t halfTime(half.size());
                     memcpy(halfTime.data(), half.data(), half.size());
                     socket.send(halfTime, SEND);
+
+                    fast = true;
+                    slow = false;
 
                     //update lastTime
                     zmq::message_t resp;
@@ -264,6 +288,13 @@ int main() {
             i.second->checkCollision(platform);
             i.second->checkCollision(moving);
             i.second->wallCollision();
+        }
+
+        if(fast) {
+            deltaTime *= 2;
+        }
+        else if(slow) {
+            deltaTime /= 2;
         }
         
         moving.update(deltaTime);
