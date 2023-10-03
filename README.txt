@@ -26,13 +26,18 @@ To run the game:
         g++ -c Entity.cpp
         g++ main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system
 
-    6. Enter "make client" into the terminal and then after that enter "make server" into the terminal\
+    6. Enter "make client" into the terminal
 
-    7a. To run the server/client multiplayer game enter "./server" on one terminal and "./client" on another terminal
+    7. Enter "make server" into the terminal
 
-    7b. Enter "./platformer" into the terminal to do singleplayer
-        Note: the entire window may not be on your screen on the first execution of it, if so drag it on the screen
+    8a. Enter "./platformer" into the terminal to do singleplayer for parts 1 and 2 of HW2
 
+    8b. Move to the HW2part3 folder and compile by entering "g++ client2.cpp -o client2 -lzmq" into the terminal followed by "g++ server2.cpp -o server2 -lzmq"
+        into the terminal. Then run the server by "./server2" on one terminal and "./client2" on another terminal
+
+    8c. To run the server/client multiplayer game enter "./server" on one terminal and "./client" on another terminal for part 4 of HW2
+
+    Note: the entire window may not be on your screen on the first execution of it, if so drag it on the screen
 
 Game Controls:
     Move left: "left arrow" or "a"
