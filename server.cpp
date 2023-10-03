@@ -171,10 +171,10 @@ int main() {
             }
             else { //if no other message means we got some time frame so update our entities
                 //update the players and platforms
-                std::cout << message << std::endl;
+                //std::cout << message << std::endl;
                 float deltaTime = std::stof(message);
-                if(playerList.size() != 1) {
-                    deltaTime /= (playerList.size());
+                if(playerList.size() != 1) { //account for more clients
+                    deltaTime /= 2;
                 }
 
                 if(fast) {
