@@ -5,8 +5,8 @@
 #include "Thread.h"
 #include "Timeline.h"
 
-void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list) {
-    fe->runMovement(moving, player, deltaTime, list);
+void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list, bool move) {
+    fe->runMovement(moving, player, deltaTime, list, move);
 }
 
 int main() {
@@ -137,8 +137,8 @@ int main() {
         Thread t1(0, NULL, &m, &cv);
         Thread t2(1, &t1, &m, &cv);
 
-        std::thread first(run_wrapper, &t1, &moving, &player, deltaTime, std::ref(list));
-        std::thread second(run_wrapper, &t2, &moving, &player, deltaTime, std::ref(list));
+        std::thread first(run_wrapper, &t1, &moving, &player, deltaTime, std::ref(list), true);
+        std::thread second(run_wrapper, &t2, &moving, &player, deltaTime, std::ref(list), true);
 
         first.join();
         second.join();

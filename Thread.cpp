@@ -17,11 +17,13 @@ bool Thread::isBusy() {
     return busy;
 }
 
-void Thread::runMovement(MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list) {
+void Thread::runMovement(MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list, bool move) {
     if(identity == 0) { //movement
         try {
             std::unique_lock<std::mutex> cv_lock(*this->_mutex);
-            (*player).update(deltaTime);
+            if(move) {
+                (*player).update(deltaTime);
+            }
             (*moving).update(deltaTime);
             busy = !busy;
         }

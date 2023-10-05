@@ -12,8 +12,8 @@
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
 
-void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list) {
-    fe->runMovement(moving, player, deltaTime, list);
+void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list, bool move) {
+    fe->runMovement(moving, player, deltaTime, list, move);
 }
 
 int main() {
@@ -110,6 +110,8 @@ int main() {
 
     bool fast = false;
     bool slow = false;
+
+    bool focused = false;
 
     while(true) {
         std::unordered_map<int, Player*> clients;
@@ -267,6 +269,12 @@ int main() {
                 sf::FloatRect view2(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(view2));
             }
+            if(event.type = sf::Event::GainedFocus) {
+                focused = true;
+            }
+            if(event.type = sf::Event::LostFocus) {
+                focused = false;
+            }
         }
 
         //game is paused, no movement
@@ -292,18 +300,19 @@ int main() {
             // i.second->checkCollision(platform);
             // i.second->checkCollision(moving);
             // i.second->wallCollision();
+            if(i.first == playerId) {
+                std::mutex m;
+                std::condition_variable cv;
 
-            std::mutex m;
-            std::condition_variable cv;
+                Thread t1(0, NULL, &m, &cv);
+                Thread t2(1, &t1, &m, &cv);
 
-            Thread t1(0, NULL, &m, &cv);
-            Thread t2(1, &t1, &m, &cv);
+                std::thread first(run_wrapper, &t1, &moving, i.second, deltaTime, std::ref(list), focused);
+                std::thread second(run_wrapper, &t2, &moving, i.second, deltaTime, std::ref(list), focused);
 
-            std::thread first(run_wrapper, &t1, &moving, i.second, deltaTime, std::ref(list));
-            std::thread second(run_wrapper, &t2, &moving, i.second, deltaTime, std::ref(list));
-
-            first.join();
-            second.join();
+                first.join();
+                second.join();
+            }
         }
 
         if(fast) {
@@ -313,7 +322,7 @@ int main() {
             deltaTime /= 2;
         }
         
-        moving.update(deltaTime);
+        //moving.update(deltaTime);
 
         //draw/render everything
         for(auto i : clients) {
