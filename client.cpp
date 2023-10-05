@@ -12,6 +12,10 @@
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
 
+void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list) {
+    fe->runMovement(moving, player, deltaTime, list);
+}
+
 int main() {
     //connect to socket
     zmq::context_t context(1);
@@ -284,10 +288,22 @@ int main() {
 
         //collision checking don't know if necessary on client side
         for(auto i : clients) {
-            i.second->checkCollision(floor);
-            i.second->checkCollision(platform);
-            i.second->checkCollision(moving);
-            i.second->wallCollision();
+            // i.second->checkCollision(floor);
+            // i.second->checkCollision(platform);
+            // i.second->checkCollision(moving);
+            // i.second->wallCollision();
+
+            std::mutex m;
+            std::condition_variable cv;
+
+            Thread t1(0, NULL, &m, &cv);
+            Thread t2(1, &t1, &m, &cv);
+
+            std::thread first(run_wrapper, &t1, &moving, i.second, deltaTime, std::ref(list));
+            std::thread second(run_wrapper, &t2, &moving, i.second, deltaTime, std::ref(list));
+
+            first.join();
+            second.join();
         }
 
         if(fast) {

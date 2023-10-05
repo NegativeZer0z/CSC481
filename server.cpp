@@ -165,6 +165,7 @@ int main() {
                 zmq::message_t exitId;
                 socket.recv(exitId, REPLY);
 
+                // std::cout << exitId.to_string() << std::endl;
                 int id = std::stoi(exitId.to_string());
                 playerList.erase(id);
                 socket.send(tempMessSend, SEND);
