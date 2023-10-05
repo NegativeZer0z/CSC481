@@ -12,7 +12,7 @@
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
 
-void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity>& list, bool move) {
+void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
 }
 
@@ -92,9 +92,9 @@ int main() {
     bool mode = false;
 
     //push all static platforms to a list
-    std::vector<Entity> list;
-    list.push_back(floor);
-    list.push_back(platform);
+    std::vector<Entity*> list;
+    list.push_back(&floor);
+    list.push_back(&platform);
 
     //get the initial time to calc deltaTime
     std::string last = "getTime";
