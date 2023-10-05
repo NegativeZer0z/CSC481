@@ -173,7 +173,9 @@ int main() {
             else { //if no other message means we got some time frame so update our entities
                 //update the players and platforms
                 //std::cout << message << std::endl;
-                float deltaTime = std::stof(message);
+                float deltaTime;
+                int id;
+                sscanf(message.c_str(), "%f %d", &deltaTime, &id);
                 if(playerList.size() != 1) { //account for more clients
                     deltaTime /= 2;
                 }
@@ -196,7 +198,9 @@ int main() {
                     //NOTE: game for some reason speeds up when new client connects
                     moving.update(deltaTime);
                     for(auto i : playerList) {
-                        i.second->update(deltaTime);
+                        if(i.first == id) {
+                            i.second->update(deltaTime);
+                        }
                     }
                 }
                 //check for collisions, still buggy if there is multiple clients

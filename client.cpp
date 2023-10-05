@@ -113,8 +113,10 @@ int main() {
 
     bool focused = false;
 
+    std::unordered_map<int, Player*> clients;
+
     while(true) {
-        std::unordered_map<int, Player*> clients;
+        // std::unordered_map<int, Player*> clients;
 
         //add the clients to the clients map
         std::string getClient = "getClient"; //(1)
@@ -143,6 +145,9 @@ int main() {
             if(clients.find(id) == clients.end()) {
                 clients.insert(std::make_pair(id, new Player(sf::Vector2f(x, y), sf::Vector2f(28.f, 62.f))));
                 clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
+            }
+            else {
+                clients.at(id)->setSpritePosition(x, y);
             }
         }
 
@@ -287,12 +292,22 @@ int main() {
 
         //pass in deltaTime to update server entties
         std::string dt = std::to_string(deltaTime);
+        dt += " ";
+        dt += std::to_string(playerId);
+        //std::cout << dt << std::endl;
         zmq::message_t dtpass(dt.size());
         memcpy(dtpass.data(), dt.data(), dt.size());
         socket.send(dtpass, SEND);
 
         zmq::message_t noUse;
         socket.recv(noUse, REPLY);
+
+        if(fast) {
+            deltaTime *= 2;
+        }
+        else if(slow) {
+            deltaTime /= 2;
+        }
 
         //collision checking don't know if necessary on client side
         for(auto i : clients) {
@@ -313,13 +328,6 @@ int main() {
                 first.join();
                 second.join();
             }
-        }
-
-        if(fast) {
-            deltaTime *= 2;
-        }
-        else if(slow) {
-            deltaTime /= 2;
         }
         
         //moving.update(deltaTime);
