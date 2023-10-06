@@ -152,7 +152,10 @@ int main() {
                 clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
             }
             else {
-                clients.at(id)->setSpritePosition(x, y);
+                //BUG HERE
+                if(id != playerId) {
+                    clients.at(id)->setSpritePosition(x, y);
+                }
             }
         }
 
@@ -353,6 +356,8 @@ int main() {
 
         Thread t1(0, NULL, &m, &cv);
         Thread t2(1, &t1, &m, &cv);
+
+        //std::cout << focused << std::endl;
 
         std::thread first(run_wrapper, &t1, &moving, player, deltaTime, std::ref(list), focused);
         std::thread second(run_wrapper, &t2, &moving, player, deltaTime, std::ref(list), focused);
