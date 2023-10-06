@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "StaticPlatform.h"
 #include "MovingPlatform.h"
+#include <vector>
 
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none

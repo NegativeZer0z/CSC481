@@ -7,6 +7,7 @@
 #include "Entity.h"
 #include <zmq.hpp>
 #include <unordered_map>
+#include <vector>
 
 //default flags for sending and receiving messages
 #define SEND zmq::send_flags::none
@@ -120,6 +121,9 @@ int main() {
 
     bool initalize = false;
 
+    //a list of available ids still connected to the server
+    std::vector<int> available; 
+
     while(true) {
         // std::unordered_map<int, Player*> clients;
 
@@ -141,12 +145,21 @@ int main() {
         players += pos;
         //std::cout << players << std::endl;
 
+        //check for disconnections
+        bool disconnections = false;
+        if(cap < clients.size()) {
+            disconnections = true;
+        }
+
         //load in all of the players
         for(int i = 0; i < cap; ++i) {
             int id;
             float x, y;
             sscanf(players, "%d %f %f %n", &id, &x, &y, &pos);
             players += pos;
+
+            available.push_back(id); //add the id to the available list
+
             if(clients.find(id) == clients.end()) {
                 clients.insert(std::make_pair(id, new Player(sf::Vector2f(x, y), sf::Vector2f(28.f, 62.f))));
                 clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
@@ -159,15 +172,19 @@ int main() {
             }
         }
 
-        //initalize the current player
-        if(!initalize) {
-            for(auto i : clients) {
-                if(i.first == playerId) {
-                    player = i.second;
-                    initalize = true;
-                }
+        //check to see if any other clients have disconnected if so remove them from the clients map and init the player
+        for(auto i : clients) {
+            if(std::find(available.begin(), available.end(), i.first) == available.end()) {
+                clients.erase(i.first);
+            }
+            if(!initalize && i.first == playerId) {
+                player = i.second;
+                initalize = true;
             }
         }
+
+        //clear the list for next frame
+        available.clear();
 
         sf::Event event; //checking for window events
 
@@ -239,6 +256,7 @@ int main() {
                     else {
                         isPaused = true;
                     }
+                    free(s);
 
                 }
                 if(event.key.code == sf::Keyboard::J) { //change speed to 0.5 by pressing J
@@ -322,8 +340,7 @@ int main() {
 
         //send a string of all of the clients positions and ids
         //string format of (number of clients id1 x1 y1 id2 x2 y2 ... deltaTiime)
-        std::string upServer;
-        upServer += std::to_string(clients.size());
+        std::string upServer = std::to_string(clients.size());
         upServer += " ";
         for(auto i : clients) {
             upServer += std::to_string(i.first);
