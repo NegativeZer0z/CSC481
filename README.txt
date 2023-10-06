@@ -35,7 +35,7 @@ To run the game:
     8b. Move to the HW2part3 folder and compile by entering "g++ client2.cpp -o client2 -lzmq" into the terminal followed by "g++ server2.cpp -o server2 -lzmq"
         into the terminal. Then run the server by "./server2" on one terminal and "./client2" on another terminal
 
-    8c. To run the server/client multiplayer game enter "./server" on one terminal and "./client" on another terminal for part 4 of HW2
+    8c. To run the server/client multiplayer game enter "./server" on one terminal and "./client" on another terminal for part 4 of HW2. You can exit the server via "ctrl and C"
 
     Note: the entire window may not be on your screen on the first execution of it, if so drag it on the screen
 

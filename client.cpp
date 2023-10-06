@@ -106,14 +106,19 @@ int main() {
     socket.recv(initTime, REPLY);
     float lastTime = std::stof(initTime.to_string());
 
+    //game state vars
     bool isPaused = false;
-
     bool fast = false;
     bool slow = false;
 
     bool focused = false;
 
+    //list of all players
     std::unordered_map<int, Player*> clients;
+
+    Player *player;
+
+    bool initalize = false;
 
     while(true) {
         // std::unordered_map<int, Player*> clients;
@@ -151,6 +156,16 @@ int main() {
             }
         }
 
+        //initalize the current player
+        if(!initalize) {
+            for(auto i : clients) {
+                if(i.first == playerId) {
+                    player = i.second;
+                    initalize = true;
+                }
+            }
+        }
+
         sf::Event event; //checking for window events
 
         //get the curr time
@@ -162,7 +177,7 @@ int main() {
         zmq::message_t nextTime;
         socket.recv(nextTime, REPLY);
 
-        //set the currtime and calc the delatTime
+        //set the currtime and calc the deltaTime
         float currTime = std::stof(nextTime.to_string());
         deltaTime = currTime - lastTime;
         lastTime = currTime;
@@ -274,11 +289,16 @@ int main() {
                 sf::FloatRect view2(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(view2));
             }
-            if(event.type = sf::Event::GainedFocus) {
-                focused = true;
-            }
-            if(event.type = sf::Event::LostFocus) {
+            //check for focus of window
+            if(event.type == sf::Event::LostFocus) {
+                std::cout << "lost focused" << std::endl;
                 focused = false;
+                window.setActive(focused);
+            }
+            if(event.type == sf::Event::GainedFocus) {
+                std::cout << "focused" << std::endl;
+                focused = true;
+                window.setActive(focused);
             }
         }
 
@@ -290,18 +310,6 @@ int main() {
         //clear window for drawing
         window.clear(sf::Color::Black);
 
-        //pass in deltaTime to update server entties
-        std::string dt = std::to_string(deltaTime);
-        dt += " ";
-        dt += std::to_string(playerId);
-        //std::cout << dt << std::endl;
-        zmq::message_t dtpass(dt.size());
-        memcpy(dtpass.data(), dt.data(), dt.size());
-        socket.send(dtpass, SEND);
-
-        zmq::message_t noUse;
-        socket.recv(noUse, REPLY);
-
         if(fast) {
             deltaTime *= 2;
         }
@@ -309,28 +317,50 @@ int main() {
             deltaTime /= 2;
         }
 
-        //collision checking don't know if necessary on client side
-        for(auto i : clients) {
-            // i.second->checkCollision(floor);
-            // i.second->checkCollision(platform);
-            // i.second->checkCollision(moving);
-            // i.second->wallCollision();
-            if(i.first == playerId) {
-                std::mutex m;
-                std::condition_variable cv;
+        //pass in deltaTime to update server current player
+        std::string dt = std::to_string(deltaTime);
+        dt += " ";
+        dt += std::to_string(playerId);
 
-                Thread t1(0, NULL, &m, &cv);
-                Thread t2(1, &t1, &m, &cv);
+        zmq::message_t dtpass(dt.size());
+        memcpy(dtpass.data(), dt.data(), dt.size());
+        socket.send(dtpass, SEND);
 
-                std::thread first(run_wrapper, &t1, &moving, i.second, deltaTime, std::ref(list), focused);
-                std::thread second(run_wrapper, &t2, &moving, i.second, deltaTime, std::ref(list), focused);
+        zmq::message_t noUse;
+        socket.recv(noUse, REPLY);
 
-                first.join();
-                second.join();
-            }
-        }
-        
-        //moving.update(deltaTime);
+        //updating and checking collision of current player
+        // for(auto i : clients) {
+        //     if(i.first == playerId) {
+        //         //std::cout << i.first << " " << playerId << std::endl;
+        //         std::mutex m;
+        //         std::condition_variable cv;
+
+        //         Thread t1(0, NULL, &m, &cv);
+        //         Thread t2(1, &t1, &m, &cv);
+
+        //         std::thread first(run_wrapper, &t1, &moving, player, deltaTime, std::ref(list), focused);
+        //         std::thread second(run_wrapper, &t2, &moving, player, deltaTime, std::ref(list), focused);
+
+        //         first.join();
+        //         second.join();
+        //     }
+        // }
+
+        //threads for collision and movement
+        std::mutex m;
+        std::condition_variable cv;
+
+        Thread t1(0, NULL, &m, &cv);
+        Thread t2(1, &t1, &m, &cv);
+
+        std::thread first(run_wrapper, &t1, &moving, player, deltaTime, std::ref(list), focused);
+        std::thread second(run_wrapper, &t2, &moving, player, deltaTime, std::ref(list), focused);
+
+        first.join();
+        second.join();
+
+        //std::cout << player->getPosition().x << std::endl;
 
         //draw/render everything
         for(auto i : clients) {

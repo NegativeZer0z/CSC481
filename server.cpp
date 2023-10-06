@@ -176,9 +176,9 @@ int main() {
                 float deltaTime;
                 int id;
                 sscanf(message.c_str(), "%f %d", &deltaTime, &id);
-                if(playerList.size() != 1) { //account for more clients
-                    deltaTime /= 2;
-                }
+                // if(playerList.size() != 1) { //account for more clients
+                //     deltaTime /= 2;
+                // }
 
                 if(fast) {
                     deltaTime *= 2;
@@ -194,8 +194,7 @@ int main() {
                 if(deltaTime > 0.00005) {
                     //std::cout << deltaTime << std::endl;
 
-                    //update our players and platforms, had checking for collisions here but didn't always work
-                    //NOTE: game for some reason speeds up when new client connects
+                    //update our players and platforms
                     moving.update(deltaTime);
                     for(auto i : playerList) {
                         if(i.first == id) {
