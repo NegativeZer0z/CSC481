@@ -173,9 +173,29 @@ int main() {
             else { //if no other message means we got some time frame so update our entities
                 //update the players and platforms
                 //std::cout << message << std::endl;
+
+                //read in the number of clients(cap)
+                int pos;
+                int cap;
+                sscanf(message.c_str(), "%d %n", &cap, &pos);
+
+                const char *players = message.c_str();
+                players += pos;
+
+                //update all of the clients positions
+                for(int i = 0; i < cap; ++i) {
+                    int id;
+                    float x, y;
+                    sscanf(players, "%d %f %f %n", &id, &x, &y, &pos);
+                    players += pos;
+                    if(playerList.find(id) != playerList.end()) {
+                        playerList.at(id)->setSpritePosition(x, y);
+                    }
+                }
+
                 float deltaTime;
-                int id;
-                sscanf(message.c_str(), "%f %d", &deltaTime, &id);
+                sscanf(players, "%f", &deltaTime);
+
                 // if(playerList.size() != 1) { //account for more clients
                 //     deltaTime /= 2;
                 // }
@@ -190,19 +210,8 @@ int main() {
                     deltaTime = 0;
                 }
 
-                //condition to avoid spikes of super low deltaTime
-                if(deltaTime > 0.00005) {
-                    //std::cout << deltaTime << std::endl;
-
-                    //update our players and platforms
-                    moving.update(deltaTime);
-                    for(auto i : playerList) {
-                        if(i.first == id) {
-                            i.second->update(deltaTime);
-                        }
-                    }
-                }
-                //check for collisions, still buggy if there is multiple clients
+                //check for collisions and update moving platform
+                moving.update(deltaTime);
                 for(auto i : playerList) {
                     i.second->checkCollision(floor);
                     i.second->checkCollision(platform);

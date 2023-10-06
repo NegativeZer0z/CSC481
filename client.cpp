@@ -152,7 +152,7 @@ int main() {
                 clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
             }
             else {
-                //BUG HERE
+                //update the position of all other clients
                 if(id != playerId) {
                     clients.at(id)->setSpritePosition(x, y);
                 }
@@ -296,12 +296,12 @@ int main() {
             if(event.type == sf::Event::LostFocus) {
                 std::cout << "lost focused" << std::endl;
                 focused = false;
-                window.setActive(focused);
+                //window.setActive(focused);
             }
             if(event.type == sf::Event::GainedFocus) {
                 std::cout << "focused" << std::endl;
                 focused = true;
-                window.setActive(focused);
+                //window.setActive(focused);
             }
         }
 
@@ -320,52 +320,41 @@ int main() {
             deltaTime /= 2;
         }
 
-        //pass in deltaTime to update server current player
-        std::string dt = std::to_string(deltaTime);
-        dt += " ";
-        dt += std::to_string(playerId);
+        //send a string of all of the clients positions and ids
+        //string format of (number of clients id1 x1 y1 id2 x2 y2 ... deltaTiime)
+        std::string upServer;
+        upServer += std::to_string(clients.size());
+        upServer += " ";
+        for(auto i : clients) {
+            upServer += std::to_string(i.first);
+            upServer += " ";
+            upServer += std::to_string(i.second->getPosition().x);
+            upServer += " ";
+            upServer += std::to_string(i.second->getPosition().y);
+            upServer += " ";
+        }
 
-        zmq::message_t dtpass(dt.size());
-        memcpy(dtpass.data(), dt.data(), dt.size());
-        socket.send(dtpass, SEND);
+        upServer += std::to_string(deltaTime);
+
+        zmq::message_t updateServer(upServer.size());
+        memcpy(updateServer.data(), upServer.data(), upServer.size());
+        socket.send(updateServer, SEND);
 
         zmq::message_t noUse;
         socket.recv(noUse, REPLY);
 
-        //updating and checking collision of current player
-        // for(auto i : clients) {
-        //     if(i.first == playerId) {
-        //         //std::cout << i.first << " " << playerId << std::endl;
-        //         std::mutex m;
-        //         std::condition_variable cv;
-
-        //         Thread t1(0, NULL, &m, &cv);
-        //         Thread t2(1, &t1, &m, &cv);
-
-        //         std::thread first(run_wrapper, &t1, &moving, player, deltaTime, std::ref(list), focused);
-        //         std::thread second(run_wrapper, &t2, &moving, player, deltaTime, std::ref(list), focused);
-
-        //         first.join();
-        //         second.join();
-        //     }
-        // }
-
-        //threads for collision and movement
+        //threads for collision and movement for current player
         std::mutex m;
         std::condition_variable cv;
 
         Thread t1(0, NULL, &m, &cv);
         Thread t2(1, &t1, &m, &cv);
 
-        //std::cout << focused << std::endl;
-
         std::thread first(run_wrapper, &t1, &moving, player, deltaTime, std::ref(list), focused);
         std::thread second(run_wrapper, &t2, &moving, player, deltaTime, std::ref(list), focused);
 
         first.join();
         second.join();
-
-        //std::cout << player->getPosition().x << std::endl;
 
         //draw/render everything
         for(auto i : clients) {
