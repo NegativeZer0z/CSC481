@@ -125,7 +125,6 @@ int main() {
     std::vector<int> available; 
 
     while(true) {
-        // std::unordered_map<int, Player*> clients;
 
         //add the clients to the clients map
         std::string getClient = "getClient"; //(1)

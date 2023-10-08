@@ -34,11 +34,7 @@ MovingPlatform.o: MovingPlatform.cpp MovingPlatform.h
 	$(CC) -c MovingPlatform.cpp
 
 clean:
-	rm -f Player.o
-	rm -f MovingPlatform.o
-	rm -f StaticPlatform.o
-	rm -f GeneralPlatform.o
-	rm -f Entity.o
-	rm -f main.o
-	rm -f Thread.o
+	rm -f *.o
 	rm -f platformer
+	rm -f client
+	rm -f server
