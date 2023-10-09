@@ -6,6 +6,7 @@
 #include "StaticPlatform.h"
 #include "MovingPlatform.h"
 #include <vector>
+#include <memory>
 
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
@@ -17,7 +18,7 @@ int main() {
     socket.bind("tcp://*:5555");
 
     //map of client ids matching to a player
-    std::unordered_map<int, Player*> playerList;
+    std::unordered_map<int, std::shared_ptr<Player>> playerList;
     int nextId = 1;
 
     int64_t defaultTic = 64;
@@ -52,7 +53,7 @@ int main() {
 
             //add player and client id to the map and increment nextId for next client
             if(playerList.find(nextId) == playerList.end()) {
-                playerList.insert(std::make_pair(nextId, new Player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f))));
+                playerList.insert(std::make_pair(nextId, std::make_shared<Player>(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f))));
                 playerList.at(nextId)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
             }
             ++nextId;
@@ -71,7 +72,7 @@ int main() {
                 //response is formatted as (cap id1 x1 y1 id2 x2 y2 etc)
                 for(auto i : playerList) {
                     int id = i.first;
-                    Player *p = i.second;
+                    std::shared_ptr<Player> p = i.second;
                     response += std::to_string(id);
                     response += " ";
                     response += std::to_string(p->getPosition().x);

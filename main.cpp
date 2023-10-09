@@ -4,8 +4,9 @@
 #include "MovingPlatform.h"
 #include "Thread.h"
 #include "Timeline.h"
+#include <memory>
 
-void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity*>& list, bool move) {
+void run_wrapper(Thread *fe, MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
 }
 
@@ -27,7 +28,7 @@ int main() {
     StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
 
     //creates a player
-    Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f));
+    std::shared_ptr<Player> player = std::make_shared<Player>(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f));
 
     //the base floor of the game
     StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
@@ -43,7 +44,7 @@ int main() {
     //"Four characters: My LPC entries" by Redshrike licensed CC-BY 3.0, CC-BY-SA 3.0, OGA-BY 3.0
     //https://opengameart.org/content/four-characters-my-lpc-entries
     //downloaded and utilize the "mage walking poses sheet copy.png"
-    player.initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
+    player->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
 
     float deltaTime = 0.f;
 
@@ -137,8 +138,8 @@ int main() {
         Thread t1(0, NULL, &m, &cv);
         Thread t2(1, &t1, &m, &cv);
 
-        std::thread first(run_wrapper, &t1, &moving, &player, deltaTime, std::ref(list), true);
-        std::thread second(run_wrapper, &t2, &moving, &player, deltaTime, std::ref(list), true);
+        std::thread first(run_wrapper, &t1, &moving, player, deltaTime, std::ref(list), true);
+        std::thread second(run_wrapper, &t2, &moving, player, deltaTime, std::ref(list), true);
 
         first.join();
         second.join();
@@ -150,7 +151,7 @@ int main() {
         platform.render(window);
         moving.render(window);
         floor.render(window);
-        player.render(window);
+        player->render(window);
 
         //display everything
         window.display();

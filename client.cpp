@@ -8,12 +8,13 @@
 #include <zmq.hpp>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 //default flags for sending and receiving messages
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
 
-void run_wrapper(Thread *fe, MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity*>& list, bool move) {
+void run_wrapper(Thread *fe, MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
 }
 
@@ -115,9 +116,9 @@ int main() {
     bool focused = false;
 
     //list of all players
-    std::unordered_map<int, Player*> clients;
+    std::unordered_map<int, std::shared_ptr<Player>> clients;
 
-    Player *player;
+    std::shared_ptr<Player> player;
 
     bool initalize = false;
 
@@ -160,7 +161,8 @@ int main() {
             available.push_back(id); //add the id to the available list
 
             if(clients.find(id) == clients.end()) {
-                clients.insert(std::make_pair(id, new Player(sf::Vector2f(x, y), sf::Vector2f(28.f, 62.f))));
+                clients.insert(std::make_pair(id, std::make_shared<Player>(sf::Vector2f(x, y), sf::Vector2f(28.f, 62.f))));
+                //clients.insert(std::make_pair(id, new Player(sf::Vector2f(x, y), sf::Vector2f(28.f, 62.f))));
                 clients.at(id)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
             }
             else {
@@ -171,19 +173,29 @@ int main() {
             }
         }
 
-        //check to see if any other clients have disconnected if so remove them from the clients map and init the player
-        for(auto i : clients) {
-            if(std::find(available.begin(), available.end(), i.first) == available.end()) {
-                clients.erase(i.first);
-            }
-            if(!initalize && i.first == playerId) {
-                player = i.second;
-                initalize = true;
+        //init player
+        if(!initalize) {
+            for(auto i : clients) {
+                if(i.first == playerId) {
+                    player = i.second;
+                    initalize = true;
+                }
             }
         }
 
+        //check to see if any other clients have disconnected if so remove them from the clients map and init the player
+        // for(auto i : clients) {
+        //     if(std::find(available.begin(), available.end(), i.first) == available.end()) {
+        //         clients.erase(i.first);
+        //     }
+        //     if(!initalize && i.first == playerId) {
+        //         player = i.second;
+        //         initalize = true;
+        //     }
+        // }
+
         //clear the list for next frame
-        available.clear();
+        //available.clear();
 
         sf::Event event; //checking for window events
 
@@ -374,7 +386,10 @@ int main() {
 
         //draw/render everything
         for(auto i : clients) {
-            i.second->render(window);
+            if(std::find(available.begin(), available.end(), i.first) != available.end()) {
+                i.second->render(window);
+            }
+            //i.second->render(window);
         }
         platform.render(window);
         floor.render(window);
@@ -382,6 +397,8 @@ int main() {
 
         //display everything
         window.display();
+
+        available.clear();
     }
     
     return 0;

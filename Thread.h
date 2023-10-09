@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <thread>
 #include <chrono>
+#include <memory>
 
 class Thread {
 
@@ -26,5 +27,5 @@ class Thread {
 
         bool isBusy(); //check if busy
 
-        void runMovement(MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity*>& list, bool move); //run threads 
+        void runMovement(MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move); //run threads 
 };

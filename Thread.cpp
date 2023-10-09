@@ -17,7 +17,7 @@ bool Thread::isBusy() {
     return busy;
 }
 
-void Thread::runMovement(MovingPlatform *moving, Player *player, float deltaTime, std::vector<Entity*>& list, bool move) {
+void Thread::runMovement(MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     if(identity == 0) { //movement
         try {
             //std::unique_lock<std::mutex> cv_lock(*this->_mutex);
