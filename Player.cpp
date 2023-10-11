@@ -10,6 +10,7 @@ Player::Player(sf::Vector2f position, sf::Vector2f size) : Entity(position, size
     botOffset = 0;
     startOffset = 0;
     jump = false;
+    dead = false;
 }
 
 void Player::update(float deltaTime) {
@@ -137,3 +138,19 @@ void Player::wallCollision() {
         setSpritePosition(sprite.getPosition().x, WINDOW_HEIGHT - sprite.getGlobalBounds().height);
     }
 }
+
+void Player::setState(bool state) {
+    dead = state;
+}
+
+bool Player::checkState() {
+    //set velocity to zero when dead before respawn
+    if(dead) {
+        velocity.x = 0;
+        velocity.y = 0;
+    }
+    return dead;
+}
+
+
+

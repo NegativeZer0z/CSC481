@@ -15,3 +15,5 @@ server
 client.o
 HW2part3/client2
 HW2part3/server2
+Spawnpoint.o
+.gitignore

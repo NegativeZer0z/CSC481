@@ -5,6 +5,8 @@
 #include "Thread.h"
 #include "Timeline.h"
 #include <memory>
+#include "Spawnpoint.h"
+#include "SpecialZone.h"
 
 void run_wrapper(Thread *fe, MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
@@ -20,6 +22,12 @@ int main() {
 
     //center the window
     window.setPosition(sf::Vector2i(230, 80));
+
+    //create spawnpoint
+    Spawnpoint sp(sf::Vector2f(100.f, 550.f), sf::Vector2f(28.f, 62.f));
+
+    //create death zone
+    SpecialZone dz(sf::Vector2f(550.f, 600.f), sf::Vector2f(100.f, 15.f), 0);
 
     //creates a moving platform
     MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
@@ -39,6 +47,7 @@ int main() {
     platform.initTexture("textures/grass.png");
     floor.initTexture("textures/grass.png");
     moving.initTexture("textures/grass.png");
+    dz.initTexture("textures/grass.png");
 
     //the player texture/art is the mage.png file in textures folder
     //"Four characters: My LPC entries" by Redshrike licensed CC-BY 3.0, CC-BY-SA 3.0, OGA-BY 3.0
@@ -144,10 +153,17 @@ int main() {
         first.join();
         second.join();
 
+        dz.checkCollision(player);
+
+        if(player->checkState()) {
+            sp.spawn(player);
+        }
+
         //clear window for drawing
         window.clear(sf::Color::Black);
 
         //draw/render everything
+        dz.render(window);
         platform.render(window);
         moving.render(window);
         floor.render(window);

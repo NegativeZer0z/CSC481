@@ -33,6 +33,8 @@ class Player : public Entity {
 
         int startOffset; //offset from the starting x coord
 
+        bool dead; //bool to see if player has died
+
     public:
         Player(sf::Vector2f position, sf::Vector2f size); //constructor
 
@@ -45,4 +47,8 @@ class Player : public Entity {
         bool checkCollision(Entity& entity); //check collision when moving to other entities
 
         void wallCollision(); //check collision with the borders of the window
+
+        void setState(bool state); //set the state of the player(dead or not)
+
+        bool checkState(); //get the state(dead or not) of the player
 };
