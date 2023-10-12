@@ -27,7 +27,7 @@ int main() {
     Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
 
     //create death zone
-    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(400.f, 15.f), 0);
+    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(00.f, 15.f), 0);
 
     //creates a moving platform
     MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);

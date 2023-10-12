@@ -11,8 +11,8 @@ Player::Player(sf::Vector2f position, sf::Vector2f size) : Entity(position, size
     startOffset = 0;
     jump = false;
     dead = false;
-    leftBound = 0.f;
-    rightBound = WINDOW_WIDTH;
+    leftBound = 300.f;
+    rightBound = WINDOW_WIDTH - 300.f;
 }
 
 void Player::update(float deltaTime) {
@@ -135,7 +135,7 @@ void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
         setSpritePosition(1536.f - sprite.getGlobalBounds().width, sprite.getPosition().y);
         return;
     }
-    if(sprite.getPosition().x < leftBound) { //left side
+    if(sprite.getPosition().x < leftBound && sprite.getPosition().x > 300.f) { //left side
         //setSpritePosition(leftBound, sprite.getPosition().y);
         view.move(-SCREEN_SPEED, 0);
         leftBound -= SCREEN_SPEED;
@@ -145,7 +145,7 @@ void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
     if(sprite.getPosition().y < 0.f) { //bottom
         setSpritePosition(sprite.getPosition().x, 0.f);
     }
-    if(sprite.getPosition().x + sprite.getGlobalBounds().width > rightBound) { //right side
+    if(sprite.getPosition().x + sprite.getGlobalBounds().width > rightBound && sprite.getPosition().x + sprite.getGlobalBounds().width < 1236.f) { //right side
         //setSpritePosition(rightBound - sprite.getGlobalBounds().width, sprite.getPosition().y);
         view.move(SCREEN_SPEED, 0);
         leftBound += SCREEN_SPEED;
