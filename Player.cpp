@@ -11,6 +11,8 @@ Player::Player(sf::Vector2f position, sf::Vector2f size) : Entity(position, size
     startOffset = 0;
     jump = false;
     dead = false;
+    leftBound = 0.f;
+    rightBound = WINDOW_WIDTH;
 }
 
 void Player::update(float deltaTime) {
@@ -124,19 +126,35 @@ bool Player::checkCollision(Entity& entity) {
     return false;
 }
 
-void Player::wallCollision() {
-    if(sprite.getPosition().x < 0.f) { //left side
+void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
+    if(sprite.getPosition().x < 0.f) {
         setSpritePosition(0.f, sprite.getPosition().y);
+        return;
+    }
+    if(sprite.getPosition().x + sprite.getGlobalBounds().width > 1536.f) { //right side
+        setSpritePosition(1536.f - sprite.getGlobalBounds().width, sprite.getPosition().y);
+        return;
+    }
+    if(sprite.getPosition().x < leftBound) { //left side
+        //setSpritePosition(leftBound, sprite.getPosition().y);
+        view.move(-SCREEN_SPEED, 0);
+        leftBound -= SCREEN_SPEED;
+        rightBound -= SCREEN_SPEED;
+        window.setView(view);
     }
     if(sprite.getPosition().y < 0.f) { //bottom
         setSpritePosition(sprite.getPosition().x, 0.f);
     }
-    if(sprite.getPosition().x + sprite.getGlobalBounds().width > WINDOW_WIDTH) { //right side
-        setSpritePosition(WINDOW_WIDTH - sprite.getGlobalBounds().width, sprite.getPosition().y);
+    if(sprite.getPosition().x + sprite.getGlobalBounds().width > rightBound) { //right side
+        //setSpritePosition(rightBound - sprite.getGlobalBounds().width, sprite.getPosition().y);
+        view.move(SCREEN_SPEED, 0);
+        leftBound += SCREEN_SPEED;
+        rightBound += SCREEN_SPEED;
+        window.setView(view);
     }
-    if(sprite.getPosition().y + sprite.getGlobalBounds().height > WINDOW_HEIGHT) { //top
-        setSpritePosition(sprite.getPosition().x, WINDOW_HEIGHT - sprite.getGlobalBounds().height);
-    }
+    // if(sprite.getPosition().y + sprite.getGlobalBounds().height > WINDOW_HEIGHT) { //top
+    //     setSpritePosition(sprite.getPosition().x, WINDOW_HEIGHT - sprite.getGlobalBounds().height);
+    // }
 }
 
 void Player::setState(bool state) {

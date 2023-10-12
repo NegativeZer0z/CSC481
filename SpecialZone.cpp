@@ -15,7 +15,7 @@ SpecialZone::SpecialZone(sf::Vector2f pos, sf::Vector2f size, int type) : Entity
 }
 
 bool SpecialZone::checkCollision(std::shared_ptr<Player> player) {
-    sf::FloatRect currBounds = sprite.getGlobalBounds();
+    sf::FloatRect currBounds = getGlobalBounds();
     sf::FloatRect playerBounds = player->getGlobalBounds();
 
     if(playerBounds.intersects(currBounds)) {

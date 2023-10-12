@@ -212,14 +212,8 @@ int main() {
                     deltaTime = 0;
                 }
 
-                //check for collisions and update moving platform
+                //update moving platform
                 moving.update(deltaTime);
-                for(auto i : playerList) {
-                    i.second->checkCollision(floor);
-                    i.second->checkCollision(platform);
-                    i.second->checkCollision(moving);
-                    i.second->wallCollision();
-                }
 
                 //garbage, but we need to send something
                 std::string garb = "garb";

@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <vector>
 #include <memory>
+#include "Spawnpoint.h"
+#include "SpecialZone.h"
 
 //default flags for sending and receiving messages
 #define SEND zmq::send_flags::none
@@ -48,6 +50,12 @@ int main() {
     //center the window
     window.setPosition(sf::Vector2i(230, 80));
 
+    //create spawnpoint
+    Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
+
+    //create death zone
+    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(400.f, 15.f), 0);
+
     //creats a static platform
     StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
 
@@ -61,15 +69,21 @@ int main() {
 
     //the base floor of the game
     StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
+    StaticPlatform floor2(sf::Vector2f(1024.f, 750.f), sf::Vector2f(512.f, 18.f));
 
     //initalize the textures
 
-    //both platforms and the floor uses grass.png as the texture in the textures folder
+    //both platforms uses rockfloor.png as the texture in the textures folder
+    //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
+    //https://opengameart.org/node/7814
+    platform.initTexture("textures/rockfloor.png");
+    moving.initTexture("textures/rockfloor.png");
+
+    //both floor objects uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
     //https://opengameart.org/node/8054
-    platform.initTexture("textures/grass.png");
     floor.initTexture("textures/grass.png");
-    moving.initTexture("textures/grass.png");
+    floor2.initTexture("textures/grass.png");
 
     //the player texture/art is the mage.png file in textures folder
     //"Four characters: My LPC entries" by Redshrike licensed CC-BY 3.0, CC-BY-SA 3.0, OGA-BY 3.0
@@ -97,6 +111,7 @@ int main() {
     std::vector<Entity*> list;
     list.push_back(&floor);
     list.push_back(&platform);
+    list.push_back(&floor2);
 
     //get the initial time to calc deltaTime
     std::string last = "getTime";
@@ -255,7 +270,7 @@ int main() {
                     p = reply.to_string();
                     float dt;
 
-                    char *s = (char *)malloc(p.length());
+                    char *s = new char[p.length() + 1];
                     sscanf(p.c_str(), "%s %f", s, &dt);
                     std::string s2 = s;
 
@@ -384,6 +399,14 @@ int main() {
         first.join();
         second.join();
 
+        dz.checkCollision(player);
+        player->wallCollision(window, view);
+
+        if(player->checkState()) {
+            sp.spawn(player);
+            window.setView(view);
+        }
+
         //draw/render everything
         for(auto i : clients) {
             if(std::find(available.begin(), available.end(), i.first) != available.end()) {
@@ -394,6 +417,8 @@ int main() {
         platform.render(window);
         floor.render(window);
         moving.render(window);
+        floor2.render(window);
+        window.draw(dz);
 
         //display everything
         window.display();

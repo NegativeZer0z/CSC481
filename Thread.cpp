@@ -38,7 +38,6 @@ void Thread::runMovement(MovingPlatform *moving, std::shared_ptr<Player> player,
             try {
                 //std::unique_lock<std::mutex> lock(*_mutex);
                 _mutex->lock();
-                (*player).wallCollision();
                 (*moving).checkCollision(*player);
                 (*player).checkCollision(*moving);
 

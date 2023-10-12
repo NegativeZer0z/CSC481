@@ -10,6 +10,7 @@
 #define MAX_VERTICAL_VELOCITY 8.f
 #define PLAYER_SPEED 6600.f
 #define JUMP_HEIGHT 20280.f
+#define SCREEN_SPEED 20.f
 
 class Player : public Entity {
     
@@ -35,6 +36,10 @@ class Player : public Entity {
 
         bool dead; //bool to see if player has died
 
+        float leftBound;
+
+        float rightBound;
+
     public:
         Player(sf::Vector2f position, sf::Vector2f size); //constructor
 
@@ -46,7 +51,7 @@ class Player : public Entity {
 
         bool checkCollision(Entity& entity); //check collision when moving to other entities
 
-        void wallCollision(); //check collision with the borders of the window
+        void wallCollision(sf::RenderWindow& window, sf::View& view); //check collision with the borders of the window
 
         void setState(bool state); //set the state of the player(dead or not)
 

@@ -20,9 +20,11 @@ void Entity::setSpritePosition(float x, float y) {
 }
 
 void Entity::initTexture(std::string path) {
-    if(!texture.loadFromFile(path, sf::IntRect(position.x, position.y, size.x, size.y))) {
-        std::cout << "Can't load texture" << path << "\n";
+    if(!texture.loadFromFile(path)) {
+        // std::cout << size.x << " " << size.y << std::endl;
+        std::cout << "Can't load texture: " << path << "\n";
     }
     sprite.setPosition(position);
     sprite.setTexture(texture);
+    sprite.setTextureRect(sf::IntRect(position.x, position.y, size.x, size.y));
 }
