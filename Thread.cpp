@@ -25,7 +25,6 @@ void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, s
             if(move) {
                 (*player).update(deltaTime);
             }
-            //(*moving).update(deltaTime);
             for(int i = 0; i < moving.size(); ++i) {
                 moving[i]->update(deltaTime);
             }
@@ -45,8 +44,6 @@ void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, s
                     moving[i]->checkCollision(*player);
                     player->checkCollision(*moving[i]);
                 }
-                //(*moving).checkCollision(*player);
-                //(*player).checkCollision(*moving);
 
                 for(int i = 0; i < list.size(); ++i) {
                     (*player).checkCollision(*list[i]);

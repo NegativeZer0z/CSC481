@@ -131,10 +131,6 @@ void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
         setSpritePosition(0.f, sprite.getPosition().y);
         return;
     }
-    if(sprite.getPosition().x + sprite.getGlobalBounds().width > 1536.f) { //right side
-        setSpritePosition(1536.f - sprite.getGlobalBounds().width, sprite.getPosition().y);
-        return;
-    }
     if(sprite.getPosition().x < leftBound && sprite.getPosition().x > 300.f) { //left side
         //setSpritePosition(leftBound, sprite.getPosition().y);
         view.move(-SCREEN_SPEED, 0);
@@ -142,15 +138,22 @@ void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
         rightBound -= SCREEN_SPEED;
         window.setView(view);
     }
-    if(sprite.getPosition().y < 0.f) { //bottom
-        setSpritePosition(sprite.getPosition().x, 0.f);
+
+    if(sprite.getPosition().x + sprite.getGlobalBounds().width > 1536.f) { //right side
+        setSpritePosition(1536.f - sprite.getGlobalBounds().width, sprite.getPosition().y);
+        return;
     }
+
     if(sprite.getPosition().x + sprite.getGlobalBounds().width > rightBound && sprite.getPosition().x + sprite.getGlobalBounds().width < 1236.f) { //right side
         //setSpritePosition(rightBound - sprite.getGlobalBounds().width, sprite.getPosition().y);
         view.move(SCREEN_SPEED, 0);
         leftBound += SCREEN_SPEED;
         rightBound += SCREEN_SPEED;
         window.setView(view);
+    }
+
+    if(sprite.getPosition().y < 0.f) { //bottom
+        setSpritePosition(sprite.getPosition().x, 0.f);
     }
     // if(sprite.getPosition().y + sprite.getGlobalBounds().height > WINDOW_HEIGHT) { //top
     //     setSpritePosition(sprite.getPosition().x, WINDOW_HEIGHT - sprite.getGlobalBounds().height);
@@ -166,6 +169,8 @@ bool Player::checkState() {
     if(dead) {
         velocity.x = 0;
         velocity.y = 0;
+        leftBound = 300.f;
+        rightBound = WINDOW_WIDTH - 300.f;
     }
     return dead;
 }

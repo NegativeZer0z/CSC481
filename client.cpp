@@ -54,13 +54,15 @@ int main() {
     Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
 
     //create death zone
-    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(400.f, 15.f), 0);
+    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
 
     //creats a static platform
     StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
+    StaticPlatform platform2(sf::Vector2f(1020.f, 480.f), sf::Vector2f(100.f, 15.f));
 
     //creates a moving platform
-    std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+    std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(690.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+    std::shared_ptr<MovingPlatform> moving2 = std::make_shared<MovingPlatform>(sf::Vector2f(880.f, 550.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(0.0f, 1.0f), 4000.0f, 40.f, 40.f);
 
     //creates the current client's player and add to the list of players
     //Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f)); //temp here for testing, should add to the map in the loop of each new client
@@ -77,7 +79,9 @@ int main() {
     //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     //https://opengameart.org/node/7814
     platform.initTexture("textures/rockfloor.png");
+    platform2.initTexture("textures/rockfloor.png");
     moving->initTexture("textures/rockfloor.png");
+    moving2->initTexture("textures/rockfloor.png");
 
     //both floor objects uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
@@ -111,6 +115,7 @@ int main() {
     std::vector<Entity*> list;
     list.push_back(&floor);
     list.push_back(&platform);
+    list.push_back(&platform2);
     list.push_back(&floor2);
 
     //get the initial time to calc deltaTime
@@ -135,21 +140,47 @@ int main() {
 
     std::shared_ptr<Player> player;
 
+    //store our moving platforms
     std::unordered_map<int, std::shared_ptr<MovingPlatform>> movingList;
+    movingList[0] = moving;
+    movingList[1] = moving2;
 
     std::vector<std::shared_ptr<MovingPlatform>> movingVector;
     movingVector.push_back(moving);
+    movingVector.push_back(moving2);
 
     bool initalize = false;
 
     //a list of available ids still connected to the server
     std::vector<int> available;
 
-    //TODO add moving platforms to map and update their init positions and directions from the server
-    // std::string getMoving = "getMoving";
-    // zmq::message_t getMovingS(getMoving.size());
-    // memcpy(getMovingS.data(), getMoving.data(), getMoving.size());
-    // socket.send(getMovingS, SEND);
+    //update moving platforms positions
+    std::string getMoving = "getMoving";
+    zmq::message_t getMovingS(getMoving.size());
+    memcpy(getMovingS.data(), getMoving.data(), getMoving.size());
+    socket.send(getMovingS, SEND);
+
+    zmq::message_t movingInfo;
+    socket.recv(movingInfo, REPLY);
+    std::string movingStr = movingInfo.to_string();
+
+    int movingCap;
+    int movingPos;
+    sscanf(movingStr.c_str(), "%d %n", &movingCap, &movingPos);
+    const char *movingPlats = movingStr.c_str();
+    movingPlats += movingPos;
+
+    for(int i = 0; i < movingCap; ++i) {
+        float x, y;
+        float dirx, diry;
+        int id;
+        sscanf(movingPlats, "%d %f %f %f %f %n", &id, &x, &y, &dirx, &diry, &movingPos);
+        movingPlats += movingPos;
+        movingList.at(id)->setPosition(sf::Vector2f(x, y));
+        movingList.at(id)->setDirection(sf::Vector2f(dirx, diry));
+    }
+    // std::cout << moving->getPosition().x << " " << moving->getPosition().y << std::endl;
+    // std::cout << "connect" << std::endl;
 
     while(true) {
 
@@ -170,12 +201,6 @@ int main() {
         const char *players = info2.c_str();
         players += pos;
         //std::cout << players << std::endl;
-
-        //check for disconnections
-        bool disconnections = false;
-        if(cap < clients.size()) {
-            disconnections = true;
-        }
 
         //load in all of the players
         for(int i = 0; i < cap; ++i) {
@@ -260,8 +285,7 @@ int main() {
                     else {
                         isPaused = true;
                     }
-                    free(s);
-
+                    delete s;
                 }
                 if(event.key.code == sf::Keyboard::J) { //change speed to 0.5 by pressing J
                     //message to double tic to half speed the game
@@ -318,12 +342,10 @@ int main() {
             if(event.type == sf::Event::LostFocus) {
                 std::cout << "lost focused" << std::endl;
                 focused = false;
-                //window.setActive(focused);
             }
             if(event.type == sf::Event::GainedFocus) {
                 std::cout << "focused" << std::endl;
                 focused = true;
-                //window.setActive(focused);
             }
         }
 
@@ -341,6 +363,36 @@ int main() {
         deltaTime = currTime - lastTime;
         lastTime = currTime;
 
+        //get the current state of the game, fast, slow, paused, etc
+        std::string getState = "getState";
+        zmq::message_t getStateS(getState.size());
+        memcpy(getStateS.data(), getState.data(), getState.size());
+        socket.send(getStateS, SEND);
+
+        zmq::message_t rtnState;
+        socket.recv(rtnState, REPLY);
+        std::string currState = rtnState.to_string();
+
+        if(currState == "pause") {
+            isPaused = true;
+            fast = false;
+            slow = false;
+            std::cout << "pause" << std::endl;
+        }
+        else if(currState == "fast") {
+            fast = true;
+            slow = false;
+        }
+        else if(currState == "slow") {
+            slow = true;
+            fast = false;
+        }
+        else if(currState == "normal") {
+            isPaused = false;
+            slow = false;
+            fast = false;
+        }
+
         //game is paused, no movement
         if(isPaused) {
             deltaTime = 0.f;
@@ -354,6 +406,11 @@ int main() {
         }
         else if(slow) {
             deltaTime /= 2;
+        }
+
+        //bug regarding unpausing
+        if(deltaTime < 0.f) {
+            deltaTime = 0.0025f;
         }
 
         //send a string of all of the clients positions and ids
@@ -396,6 +453,9 @@ int main() {
 
         if(player->checkState()) {
             sp.spawn(player);
+            view.setCenter(windowX / 2, windowY / 2);
+            view.setSize(windowX, windowY);
+            view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
             window.setView(view);
         }
 
@@ -404,13 +464,16 @@ int main() {
             if(std::find(available.begin(), available.end(), i.first) != available.end()) {
                 i.second->render(window);
             }
-            //i.second->render(window);
         }
         platform.render(window);
+        platform2.render(window);
         floor.render(window);
-        moving->render(window);
         floor2.render(window);
-        window.draw(dz);
+
+        for(auto& i : movingVector) {
+            i->render(window);
+        }
+        //std::cout << moving->getPosition().x << " " << moving->getPosition().y << std::endl;
 
         //display everything
         window.display();

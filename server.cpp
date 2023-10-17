@@ -35,15 +35,19 @@ StaticPlatform floor2(sf::Vector2f(1024.f, 750.f), sf::Vector2f(512.f, 18.f));
 
 //static platforms
 StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
+StaticPlatform platform2(sf::Vector2f(1020.f, 480.f), sf::Vector2f(100.f, 15.f));
 
 //moving platforms
-MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(690.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+std::shared_ptr<MovingPlatform> moving2 = std::make_shared<MovingPlatform>(sf::Vector2f(880.f, 550.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(0.0f, 1.0f), 4000.0f, 40.f, 40.f);
+
+std::unordered_map<int, std::shared_ptr<MovingPlatform>> movingList;
 
 //create spawnpoint
 Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
 
 //create death zone
-SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(400.f, 15.f), 0);
+SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
 
 void *worker_routine(void *arg) {
     //connect to socket
@@ -184,8 +188,45 @@ void *worker_routine(void *arg) {
                 memcpy(tempMessSend.data(), tempMess.data(), tempMess.size());
                 socket.send(tempMessSend, SEND);
             }
-            else if(message == "getMoving") {
-                
+            else if(message == "getMoving") { //update the moving platforms for clients return format "cap id x y dir.x dir.y"
+                //std::cout << "moving" << std::endl;
+                std::string movingRtn = std::to_string(movingList.size());
+                movingRtn += " ";
+                for(auto& i : movingList) {
+                    sf::Vector2f pos = i.second->getPosition();
+                    sf::Vector2f dir = i.second->getDirection();
+                    movingRtn += std::to_string(i.first);
+                    movingRtn += " ";
+                    movingRtn += std::to_string(pos.x);
+                    movingRtn += " ";
+                    movingRtn += std::to_string(pos.y);
+                    movingRtn += " ";
+                    movingRtn += std::to_string(dir.x);
+                    movingRtn += " ";
+                    movingRtn += std::to_string(dir.y);
+                    movingRtn += " ";
+                }
+                zmq::message_t movingRtnStr(movingRtn.size());
+                memcpy(movingRtnStr.data(), movingRtn.data(), movingRtn.size());
+                socket.send(movingRtnStr, SEND);                
+            }
+            else if(message == "getState") {
+                std::string currState;
+                if(global.isPaused()) {
+                    currState = "pause";
+                }
+                else if(fast) {
+                    currState = "fast";
+                }
+                else if(slow) {
+                    currState = "slow";
+                }
+                else {
+                    currState = "normal";
+                }
+                zmq::message_t rtnState(currState.size());
+                memcpy(rtnState.data(), currState.data(), currState.size());
+                socket.send(rtnState, SEND);
             }
             else { //if no other message means we got some time frame so update our entities
                 //update the players and platforms
@@ -224,7 +265,9 @@ void *worker_routine(void *arg) {
                 }
 
                 //update moving platform
-                moving.update(deltaTime);
+                moving->update(deltaTime);
+                moving2->update(deltaTime);
+                //std::cout << moving->getPosition().x << " " << moving->getPosition().y << std::endl;
 
                 //garbage, but we need to send something
                 std::string garb = "garb";
@@ -242,7 +285,12 @@ int main() {
     floor1.initTexture("textures/grass.png");
     floor2.initTexture("textures/grass.png");
     platform.initTexture("textures/rockfloor.png");
-    moving.initTexture("textures/rockfloor.png");
+    platform2.initTexture("textures/rockfloor.png");
+    moving->initTexture("textures/rockfloor.png");
+    moving2->initTexture("textures/rockfloor.png");
+
+    movingList[0] = moving;
+    movingList[1] = moving2;
 
     //connect workers
     zmq::context_t context(1);

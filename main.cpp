@@ -28,14 +28,15 @@ int main() {
     Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
 
     //create death zone
-    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(00.f, 15.f), 0);
+    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
 
     //creates a moving platform
-    std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(670.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
-    std::shared_ptr<MovingPlatform> moving2 = std::make_shared<MovingPlatform>(sf::Vector2f(770.f, 550.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(0.0f, 1.0f), 4000.0f, 40.f, 40.f);
+    std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(690.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+    std::shared_ptr<MovingPlatform> moving2 = std::make_shared<MovingPlatform>(sf::Vector2f(880.f, 550.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(0.0f, 1.0f), 4000.0f, 40.f, 40.f);
 
     //creats a static platform
     StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
+    StaticPlatform platform2(sf::Vector2f(1020.f, 480.f), sf::Vector2f(100.f, 15.f));
 
     //creates a player
     std::shared_ptr<Player> player = std::make_shared<Player>(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f));
@@ -49,6 +50,7 @@ int main() {
     //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     //https://opengameart.org/node/7814
     platform.initTexture("textures/rockfloor.png");
+    platform2.initTexture("textures/rockfloor.png");
     moving->initTexture("textures/rockfloor.png");
     moving2->initTexture("textures/rockfloor.png");
 
@@ -84,6 +86,7 @@ int main() {
     list.push_back(&floor);
     list.push_back(&platform);
     list.push_back(&floor2);
+    list.push_back(&platform2);
 
     //init timeline
     Timeline global(nullptr, 64);
@@ -176,6 +179,9 @@ int main() {
 
         if(player->checkState()) {
             sp.spawn(player);
+            view.setCenter(windowX / 2, windowY / 2);
+            view.setSize(windowX, windowY);
+            view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
             window.setView(view);
         }
 
@@ -184,12 +190,13 @@ int main() {
 
         //draw/render everything
         platform.render(window);
+        platform2.render(window);
         moving->render(window);
         moving2->render(window);
         floor.render(window);
         player->render(window);
         floor2.render(window);
-        // window.draw(dz);
+        window.draw(dz);
 
         //display everything
         window.display();
