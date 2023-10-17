@@ -32,4 +32,7 @@ class MovingPlatform : public GeneralPlatform {
 
         //get the direction the platform is moving in
         sf::Vector2f getDirection();
+
+        //set the direction
+        void setDirection(sf::Vector2f dir);
 };

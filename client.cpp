@@ -16,7 +16,7 @@
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
 
-void run_wrapper(Thread *fe, MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
+void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
 }
 
@@ -60,7 +60,7 @@ int main() {
     StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
 
     //creates a moving platform
-    MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+    std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
 
     //creates the current client's player and add to the list of players
     //Player player(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f)); //temp here for testing, should add to the map in the loop of each new client
@@ -77,7 +77,7 @@ int main() {
     //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     //https://opengameart.org/node/7814
     platform.initTexture("textures/rockfloor.png");
-    moving.initTexture("textures/rockfloor.png");
+    moving->initTexture("textures/rockfloor.png");
 
     //both floor objects uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
@@ -135,10 +135,21 @@ int main() {
 
     std::shared_ptr<Player> player;
 
+    std::unordered_map<int, std::shared_ptr<MovingPlatform>> movingList;
+
+    std::vector<std::shared_ptr<MovingPlatform>> movingVector;
+    movingVector.push_back(moving);
+
     bool initalize = false;
 
     //a list of available ids still connected to the server
-    std::vector<int> available; 
+    std::vector<int> available;
+
+    //TODO add moving platforms to map and update their init positions and directions from the server
+    // std::string getMoving = "getMoving";
+    // zmq::message_t getMovingS(getMoving.size());
+    // memcpy(getMovingS.data(), getMoving.data(), getMoving.size());
+    // socket.send(getMovingS, SEND);
 
     while(true) {
 
@@ -198,40 +209,13 @@ int main() {
             }
         }
 
-        //check to see if any other clients have disconnected if so remove them from the clients map and init the player
-        // for(auto i : clients) {
-        //     if(std::find(available.begin(), available.end(), i.first) == available.end()) {
-        //         clients.erase(i.first);
-        //     }
-        //     if(!initalize && i.first == playerId) {
-        //         player = i.second;
-        //         initalize = true;
-        //     }
-        // }
-
-        //clear the list for next frame
-        //available.clear();
-
         sf::Event event; //checking for window events
-
-        //get the curr time
-        std::string curr = "getTime";
-        zmq::message_t currInit(curr.size());
-        memcpy(currInit.data(), curr.data(), curr.size());
-        socket.send(currInit, SEND);
-
-        zmq::message_t nextTime;
-        socket.recv(nextTime, REPLY);
-
-        //set the currtime and calc the deltaTime
-        float currTime = std::stof(nextTime.to_string());
-        deltaTime = currTime - lastTime;
-        lastTime = currTime;
 
         while(window.pollEvent(event)) {
 
             if(event.type == sf::Event::Closed) { //check close window event
-                std::string dis = "disconnect";
+                std::string dis = "disconnect ";
+                dis += std::to_string(playerId);
                 zmq::message_t disSend(dis.size());
                 memcpy(disSend.data(), dis.data(), dis.size());
                 socket.send(disSend, SEND);
@@ -239,12 +223,6 @@ int main() {
                 zmq::message_t exited;
                 socket.recv(exited, REPLY);
 
-                std::string discId = std::to_string(playerId);
-                zmq::message_t discIdSend(discId.size());
-                memcpy(discIdSend.data(), discId.data(), discId.size());
-                socket.send(discIdSend, SEND);
-
-                socket.recv(exited, REPLY);
                 window.close();
                 exit(1);
             }
@@ -349,6 +327,20 @@ int main() {
             }
         }
 
+        //get the curr time
+        std::string curr = "getTime";
+        zmq::message_t currInit(curr.size());
+        memcpy(currInit.data(), curr.data(), curr.size());
+        socket.send(currInit, SEND);
+
+        zmq::message_t nextTime;
+        socket.recv(nextTime, REPLY);
+
+        //set the currtime and calc the deltaTime
+        float currTime = std::stof(nextTime.to_string());
+        deltaTime = currTime - lastTime;
+        lastTime = currTime;
+
         //game is paused, no movement
         if(isPaused) {
             deltaTime = 0.f;
@@ -393,8 +385,8 @@ int main() {
         Thread t1(0, NULL, &m, &cv);
         Thread t2(1, &t1, &m, &cv);
 
-        std::thread first(run_wrapper, &t1, &moving, player, deltaTime, std::ref(list), focused);
-        std::thread second(run_wrapper, &t2, &moving, player, deltaTime, std::ref(list), focused);
+        std::thread first(run_wrapper, &t1, std::ref(movingVector), player, deltaTime, std::ref(list), focused);
+        std::thread second(run_wrapper, &t2, std::ref(movingVector), player, deltaTime, std::ref(list), focused);
 
         first.join();
         second.join();
@@ -416,7 +408,7 @@ int main() {
         }
         platform.render(window);
         floor.render(window);
-        moving.render(window);
+        moving->render(window);
         floor2.render(window);
         window.draw(dz);
 

@@ -7,35 +7,49 @@
 #include "MovingPlatform.h"
 #include <vector>
 #include <memory>
+#include "Spawnpoint.h"
+#include "SpecialZone.h"
+#include <pthread.h>
+#include <unistd.h>
+#include <cassert>
 
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
 
-int main() {
-    //conect to the socket
-    zmq::context_t context(1);
-    zmq::socket_t socket(context, ZMQ_REP);
-    socket.bind("tcp://*:5555");
+//map of client ids matching to a player
+std::unordered_map<int, std::shared_ptr<Player>> playerList;
+int nextId = 1;
 
-    //map of client ids matching to a player
-    std::unordered_map<int, std::shared_ptr<Player>> playerList;
-    int nextId = 1;
+int64_t defaultTic = 64;
 
-    int64_t defaultTic = 64;
-    //set up the timeline for the game
-    Timeline global(nullptr, defaultTic);
+//set up the timeline for the game
+Timeline global(nullptr, defaultTic);
 
-    StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
-    floor.initTexture("textures/grass.png");
+//timeline bools
+bool fast = false;
+bool slow = false;
 
-    StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
-    platform.initTexture("textures/grass.png");
+//base platforms
+StaticPlatform floor1(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
+StaticPlatform floor2(sf::Vector2f(1024.f, 750.f), sf::Vector2f(512.f, 18.f));
 
-    MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
-    moving.initTexture("textures/grass.png");
+//static platforms
+StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
 
-    bool fast = false;
-    bool slow = false;
+//moving platforms
+MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+
+//create spawnpoint
+Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
+
+//create death zone
+SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(400.f, 15.f), 0);
+
+void *worker_routine(void *arg) {
+    //connect to socket
+    zmq::context_t *context = (zmq::context_t *) arg;
+    zmq::socket_t socket(*context, ZMQ_REP);
+    socket.connect("inproc://workers");
 
     while(true) {
         zmq::message_t reply;
@@ -158,19 +172,20 @@ int main() {
                 memcpy(response.data(), str.data(), str.size());
                 socket.send(response, SEND);
             }
-            else if(message == "disconnect") {
-                std::string tempMess = "getId";
+            else if(message.find("disconnect") != std::string::npos) {
+                int exitId;
+                sscanf(message.c_str() + 11, "%d", &exitId); //read in the id
+                //std::cout << message << std::endl;
+                //std::cout << exitId << std::endl;
+                playerList.erase(exitId);
+
+                std::string tempMess = "exitNow";
                 zmq::message_t tempMessSend(tempMess.size());
                 memcpy(tempMessSend.data(), tempMess.data(), tempMess.size());
                 socket.send(tempMessSend, SEND);
-
-                zmq::message_t exitId;
-                socket.recv(exitId, REPLY);
-
-                // std::cout << exitId.to_string() << std::endl;
-                int id = std::stoi(exitId.to_string());
-                playerList.erase(id);
-                socket.send(tempMessSend, SEND);
+            }
+            else if(message == "getMoving") {
+                
             }
             else { //if no other message means we got some time frame so update our entities
                 //update the players and platforms
@@ -198,10 +213,6 @@ int main() {
                 float deltaTime;
                 sscanf(players, "%f", &deltaTime);
 
-                // if(playerList.size() != 1) { //account for more clients
-                //     deltaTime /= 2;
-                // }
-
                 if(fast) {
                     deltaTime *= 2;
                 }
@@ -223,6 +234,30 @@ int main() {
             }
         }
     }
+    return(NULL);
+}
+
+int main() {
+    //init sprites and textures
+    floor1.initTexture("textures/grass.png");
+    floor2.initTexture("textures/grass.png");
+    platform.initTexture("textures/rockfloor.png");
+    moving.initTexture("textures/rockfloor.png");
+
+    //connect workers
+    zmq::context_t context(1);
+    zmq::socket_t clients(context, ZMQ_ROUTER);
+    clients.bind("tcp://*:5555");
+    zmq::socket_t workers(context, ZMQ_DEALER);
+    workers.bind("inproc://workers");
+
+    //create threads
+    for(int i = 0; i < 4; ++i) {
+        pthread_t worker;
+        pthread_create(&worker, NULL, worker_routine, (void *) &context);
+    }
+
+    zmq_device(ZMQ_QUEUE, clients, workers);
 
     return 0;
 }

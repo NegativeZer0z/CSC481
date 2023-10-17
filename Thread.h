@@ -27,5 +27,5 @@ class Thread {
 
         bool isBusy(); //check if busy
 
-        void runMovement(MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move); //run threads 
+        void runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move); //run threads 
 };

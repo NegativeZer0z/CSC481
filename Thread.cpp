@@ -17,7 +17,7 @@ bool Thread::isBusy() {
     return busy;
 }
 
-void Thread::runMovement(MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
+void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     if(identity == 0) { //movement
         try {
             //std::unique_lock<std::mutex> cv_lock(*this->_mutex);
@@ -25,7 +25,10 @@ void Thread::runMovement(MovingPlatform *moving, std::shared_ptr<Player> player,
             if(move) {
                 (*player).update(deltaTime);
             }
-            (*moving).update(deltaTime);
+            //(*moving).update(deltaTime);
+            for(int i = 0; i < moving.size(); ++i) {
+                moving[i]->update(deltaTime);
+            }
             busy = !busy;
             _mutex->unlock();
         }
@@ -38,8 +41,12 @@ void Thread::runMovement(MovingPlatform *moving, std::shared_ptr<Player> player,
             try {
                 //std::unique_lock<std::mutex> lock(*_mutex);
                 _mutex->lock();
-                (*moving).checkCollision(*player);
-                (*player).checkCollision(*moving);
+                for(int i = 0; i < moving.size(); ++i) {
+                    moving[i]->checkCollision(*player);
+                    player->checkCollision(*moving[i]);
+                }
+                //(*moving).checkCollision(*player);
+                //(*player).checkCollision(*moving);
 
                 for(int i = 0; i < list.size(); ++i) {
                     (*player).checkCollision(*list[i]);

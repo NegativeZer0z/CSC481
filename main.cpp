@@ -7,8 +7,9 @@
 #include <memory>
 #include "Spawnpoint.h"
 #include "SpecialZone.h"
+#include <unordered_map>
 
-void run_wrapper(Thread *fe, MovingPlatform *moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
+void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
 }
 
@@ -30,7 +31,8 @@ int main() {
     SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(00.f, 15.f), 0);
 
     //creates a moving platform
-    MovingPlatform moving(sf::Vector2f(770.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+    std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(670.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
+    std::shared_ptr<MovingPlatform> moving2 = std::make_shared<MovingPlatform>(sf::Vector2f(770.f, 550.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(0.0f, 1.0f), 4000.0f, 40.f, 40.f);
 
     //creats a static platform
     StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
@@ -47,7 +49,8 @@ int main() {
     //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     //https://opengameart.org/node/7814
     platform.initTexture("textures/rockfloor.png");
-    moving.initTexture("textures/rockfloor.png");
+    moving->initTexture("textures/rockfloor.png");
+    moving2->initTexture("textures/rockfloor.png");
 
     //both floor objects uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
@@ -85,6 +88,14 @@ int main() {
     //init timeline
     Timeline global(nullptr, 64);
     float lastTime = global.getTime();
+
+    std::unordered_map<int, std::shared_ptr<MovingPlatform>> movingList;
+    movingList.insert(std::make_pair(1, moving));
+    movingList.insert(std::make_pair(2, moving2));
+
+    std::vector<std::shared_ptr<MovingPlatform>> movingVector;
+    movingVector.push_back(moving);
+    movingVector.push_back(moving2);
 
     //keep the window open while program is running
     while(true) {
@@ -154,8 +165,8 @@ int main() {
         Thread t1(0, NULL, &m, &cv);
         Thread t2(1, &t1, &m, &cv);
 
-        std::thread first(run_wrapper, &t1, &moving, player, deltaTime, std::ref(list), true);
-        std::thread second(run_wrapper, &t2, &moving, player, deltaTime, std::ref(list), true);
+        std::thread first(run_wrapper, &t1, std::ref(movingVector), player, deltaTime, std::ref(list), true);
+        std::thread second(run_wrapper, &t2, std::ref(movingVector), player, deltaTime, std::ref(list), true);
 
         first.join();
         second.join();
@@ -173,7 +184,8 @@ int main() {
 
         //draw/render everything
         platform.render(window);
-        moving.render(window);
+        moving->render(window);
+        moving2->render(window);
         floor.render(window);
         player->render(window);
         floor2.render(window);

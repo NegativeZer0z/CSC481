@@ -43,3 +43,7 @@ bool MovingPlatform::checkCollision(Entity& entity) {
 sf::Vector2f MovingPlatform::getDirection() {
     return direction;
 }
+
+void MovingPlatform::setDirection(sf::Vector2f dir) {
+    direction = dir;
+}
