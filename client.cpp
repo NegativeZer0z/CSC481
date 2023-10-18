@@ -154,34 +154,6 @@ int main() {
     //a list of available ids still connected to the server
     std::vector<int> available;
 
-    //update moving platforms positions
-    std::string getMoving = "getMoving";
-    zmq::message_t getMovingS(getMoving.size());
-    memcpy(getMovingS.data(), getMoving.data(), getMoving.size());
-    socket.send(getMovingS, SEND);
-
-    zmq::message_t movingInfo;
-    socket.recv(movingInfo, REPLY);
-    std::string movingStr = movingInfo.to_string();
-
-    int movingCap;
-    int movingPos;
-    sscanf(movingStr.c_str(), "%d %n", &movingCap, &movingPos);
-    const char *movingPlats = movingStr.c_str();
-    movingPlats += movingPos;
-
-    for(int i = 0; i < movingCap; ++i) {
-        float x, y;
-        float dirx, diry;
-        int id;
-        sscanf(movingPlats, "%d %f %f %f %f %n", &id, &x, &y, &dirx, &diry, &movingPos);
-        movingPlats += movingPos;
-        movingList.at(id)->setPosition(sf::Vector2f(x, y));
-        movingList.at(id)->setDirection(sf::Vector2f(dirx, diry));
-    }
-    // std::cout << moving->getPosition().x << " " << moving->getPosition().y << std::endl;
-    // std::cout << "connect" << std::endl;
-
     while(true) {
 
         //add the clients to the clients map
@@ -377,7 +349,6 @@ int main() {
             isPaused = true;
             fast = false;
             slow = false;
-            std::cout << "pause" << std::endl;
         }
         else if(currState == "fast") {
             fast = true;
@@ -411,6 +382,33 @@ int main() {
         //bug regarding unpausing
         if(deltaTime < 0.f) {
             deltaTime = 0.0025f;
+        }
+
+        //update moving platforms positions
+        std::string getMoving = "getMoving";
+        zmq::message_t getMovingS(getMoving.size());
+        memcpy(getMovingS.data(), getMoving.data(), getMoving.size());
+        socket.send(getMovingS, SEND);
+
+        zmq::message_t movingInfo;
+        socket.recv(movingInfo, REPLY);
+        std::string movingStr = movingInfo.to_string();
+
+        //parse string of postions and directions of moving platforms
+        int movingCap;
+        int movingPos;
+        sscanf(movingStr.c_str(), "%d %n", &movingCap, &movingPos);
+        const char *movingPlats = movingStr.c_str();
+        movingPlats += movingPos;
+
+        for(int i = 0; i < movingCap; ++i) {
+            float x, y;
+            float dirx, diry;
+            int id;
+            sscanf(movingPlats, "%d %f %f %f %f %n", &id, &x, &y, &dirx, &diry, &movingPos);
+            movingPlats += movingPos;
+            movingList.at(id)->setSpritePosition(x, y);
+            movingList.at(id)->setDirection(sf::Vector2f(dirx, diry));
         }
 
         //send a string of all of the clients positions and ids

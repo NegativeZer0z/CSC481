@@ -264,6 +264,9 @@ void *worker_routine(void *arg) {
                     deltaTime = 0;
                 }
 
+                //account for more clients connecting to prevent speedup
+                deltaTime /= playerList.size();
+
                 //update moving platform
                 moving->update(deltaTime);
                 moving2->update(deltaTime);

@@ -25,9 +25,9 @@ void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, s
             if(move) {
                 (*player).update(deltaTime);
             }
-            for(int i = 0; i < moving.size(); ++i) {
-                moving[i]->update(deltaTime);
-            }
+            // for(int i = 0; i < moving.size(); ++i) {
+            //     moving[i]->update(deltaTime);
+            // }
             busy = !busy;
             _mutex->unlock();
         }
