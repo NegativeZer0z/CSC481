@@ -179,10 +179,6 @@ int main() {
 
         if(player->checkState()) {
             sp.spawn(player);
-            view.setCenter(windowX / 2, windowY / 2);
-            view.setSize(windowX, windowY);
-            view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
-            window.setView(view);
         }
 
         //clear window for drawing
