@@ -41,7 +41,7 @@ void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, s
                 //std::unique_lock<std::mutex> lock(*_mutex);
                 _mutex->lock();
                 for(int i = 0; i < moving.size(); ++i) {
-                    moving[i]->checkCollision(*player);
+                    moving[i]->checkCollision(player);
                     player->checkCollision(*moving[i]);
                 }
 

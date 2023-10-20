@@ -22,9 +22,9 @@ void MovingPlatform::update(float deltaTime) {
     checkBoundaries();
 }
 
-bool MovingPlatform::checkCollision(Entity& entity) {
+bool MovingPlatform::checkCollision(std::shared_ptr<Entity> entity) {
     sf::FloatRect platformBounds = sprite.getGlobalBounds();
-    sf::FloatRect entityBounds = entity.getGlobalBounds();
+    sf::FloatRect entityBounds = entity->getGlobalBounds();
 
     //only need to check for the top and if there is collision move the entity by current platform velocity
     if(entityBounds.intersects(platformBounds)) {
@@ -33,7 +33,7 @@ bool MovingPlatform::checkCollision(Entity& entity) {
             && platformBounds.left < entityBounds.left + entityBounds.width
             && platformBounds.left + platformBounds.width > entityBounds.left) 
         {
-            entity.moveSprite(velocity);
+            entity->moveSprite(velocity);
             return true;
         }
     }

@@ -11,6 +11,7 @@
 #include <memory>
 #include "Spawnpoint.h"
 #include "SpecialZone.h"
+#include "Boundary.h"
 
 //default flags for sending and receiving messages
 #define SEND zmq::send_flags::none
@@ -55,6 +56,9 @@ int main() {
 
     //create death zone
     SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
+
+    //create Boundary
+    Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(850.f, 0.f));
 
     //creats a static platform
     StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
@@ -448,6 +452,7 @@ int main() {
 
         dz.checkCollision(player);
         player->wallCollision(window, view);
+        boundary.shift(player, window, view);
 
         if(player->checkState()) {
             sp.spawn(player);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GeneralPlatform.h"
+#include <memory>
 
 class MovingPlatform : public GeneralPlatform {
 
@@ -28,7 +29,7 @@ class MovingPlatform : public GeneralPlatform {
         bool checkBoundaries();
 
         //collision for the moving platform, carry things when on top of it
-        bool checkCollision(Entity& entity);
+        bool checkCollision(std::shared_ptr<Entity> entity);
 
         //get the direction the platform is moving in
         sf::Vector2f getDirection();

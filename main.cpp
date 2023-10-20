@@ -8,6 +8,7 @@
 #include "Spawnpoint.h"
 #include "SpecialZone.h"
 #include <unordered_map>
+#include "Boundary.h"
 
 void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
@@ -28,7 +29,10 @@ int main() {
     Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
 
     //create death zone
-    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
+    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(0.f, 15.f), 0);
+
+    //create Boundary
+    Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(900.f, 0.f));
 
     //creates a moving platform
     std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(690.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
@@ -176,6 +180,7 @@ int main() {
 
         dz.checkCollision(player);
         player->wallCollision(window, view);
+        boundary.shift(player, window, view);
 
         if(player->checkState()) {
             sp.spawn(player);
@@ -193,6 +198,7 @@ int main() {
         player->render(window);
         floor2.render(window);
         window.draw(dz);
+        window.draw(boundary);
 
         //display everything
         window.display();

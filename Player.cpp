@@ -139,38 +139,22 @@ void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
         setSpritePosition(sprite.getPosition().x, 0.f);
     }
 
-    if(sprite.getPosition().x < leftBound) {
-        view.setCenter(leftBound, window.getSize().y / 2);
-        window.setView(view);
-        return;
-    }
-
-    if(sprite.getPosition().x > rightBound) {
-        view.setCenter(rightBound, window.getSize().y / 2);
-        window.setView(view);
-        return;
-    }
-
-    //center the view onto the players position
-    view.setCenter(sprite.getPosition().x, window.getSize().y / 2);
-    window.setView(view);
-
-
-    // if(sprite.getPosition().x < leftBound && sprite.getPosition().x > 300.f) { //left side
-    //     //setSpritePosition(leftBound, sprite.getPosition().y);
-    //     // view.move(-SCREEN_SPEED, 0);
-    //     // leftBound -= SCREEN_SPEED;
-    //     // rightBound -= SCREEN_SPEED;
-    //     window.setView(view);
-    // }
-    // if(sprite.getPosition().x + sprite.getGlobalBounds().width > rightBound && sprite.getPosition().x + sprite.getGlobalBounds().width < 1236.f) { //right side
-    //     //setSpritePosition(rightBound - sprite.getGlobalBounds().width, sprite.getPosition().y);
-    //     // view.move(SCREEN_SPEED, 0);
-    //     // leftBound += SCREEN_SPEED;
-    //     // rightBound += SCREEN_SPEED;
+    // if(sprite.getPosition().x < leftBound) {
+    //     view.setCenter(leftBound, window.getSize().y / 2);
     //     window.setView(view);
     //     return;
     // }
+
+    // if(sprite.getPosition().x > rightBound) {
+    //     view.setCenter(rightBound, window.getSize().y / 2);
+    //     window.setView(view);
+    //     return;
+    // }
+
+    // //center the view onto the players position
+    // view.setCenter(sprite.getPosition().x, window.getSize().y / 2);
+    // window.setView(view);
+
 
     // if(sprite.getPosition().y + sprite.getGlobalBounds().height > WINDOW_HEIGHT) { //top
     //     setSpritePosition(sprite.getPosition().x, WINDOW_HEIGHT - sprite.getGlobalBounds().height);

@@ -12,6 +12,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <cassert>
+#include "Boundary.h"
 
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
@@ -48,6 +49,9 @@ Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
 
 //create death zone
 SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
+
+//create Boundary
+Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(850.f, 0.f));
 
 void *worker_routine(void *arg) {
     //connect to socket

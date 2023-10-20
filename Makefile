@@ -1,13 +1,13 @@
 CC = g++
 
-platformer: main.o StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o
-	$(CC) main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Spawnpoint.o SpecialZone.o Thread.o Timeline.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system -pthread
+platformer: main.o StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o Boundary.o
+	$(CC) main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Spawnpoint.o SpecialZone.o Thread.o Timeline.o Boundary.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
-client: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o client.cpp 
-	$(CC) client.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o -o client -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
+client: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o client.cpp Boundary.o
+	$(CC) client.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o -o client -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
-server: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o server.cpp
-	$(CC) server.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o -o server -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
+server: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o server.cpp Boundary.o
+	$(CC) server.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o -o server -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
 main.o: main.cpp
 	$(CC) -c main.cpp
@@ -38,6 +38,9 @@ SpecialZone.o: SpecialZone.cpp SpecialZone.h
 
 Spawnpoint.o: Spawnpoint.cpp Spawnpoint.h
 	$(CC) -c Spawnpoint.cpp
+
+Boundary.o: Boundary.cpp Boundary.h
+	$(CC) -c Boundary.cpp
 
 clean:
 	rm -f *.o
