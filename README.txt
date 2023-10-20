@@ -32,7 +32,7 @@ Game Controls:
 
 
 Texture/Art Credits:
-    Within the textures file there should be 2 png files -- grass.png and mage.png
+    Within the textures file there should be 3 png files -- grass.png, mage.png, and rockfloor.png
 
     grass.png:
     "29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
