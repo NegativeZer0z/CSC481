@@ -256,29 +256,39 @@ int main() {
                     }
                 }
                 if(event.key.code == sf::Keyboard::P) { //pause and unpause the game when the p key is pressed
-                    std::string p = "pause";
-                    zmq::message_t paused(p.size());
-                    memcpy(paused.data(), p.data(), p.size());
-                    socket.send(paused, SEND);
+                    // std::string p = "pause";
+                    // zmq::message_t paused(p.size());
+                    // memcpy(paused.data(), p.data(), p.size());
+                    // socket.send(paused, SEND);
 
-                    zmq::message_t reply;
-                    socket.recv(reply, REPLY);
-                    p = reply.to_string();
-                    float dt;
+                    // zmq::message_t reply;
+                    // socket.recv(reply, REPLY);
+                    // p = reply.to_string();
+                    // float dt;
 
-                    char *s = new char[p.length() + 1];
-                    sscanf(p.c_str(), "%s %f", s, &dt);
-                    std::string s2 = s;
+                    // char *s = new char[p.length() + 1];
+                    // sscanf(p.c_str(), "%s %f", s, &dt);
+                    // std::string s2 = s;
 
-                    //update the last Time for next frame of deltaTime and set isPaused to correct boolean
-                    if(s2 == "wasPaused") {
-                        lastTime = dt;
+                    // //update the last Time for next frame of deltaTime and set isPaused to correct boolean
+                    // if(s2 == "wasPaused") {
+                    //     lastTime = dt;
+                    //     isPaused = false;
+                    // }
+                    // else {
+                    //     isPaused = true;
+                    // }
+                    // delete s;
+                    if(isPaused) {
                         isPaused = false;
+                        fast = false;
+                        slow = false;
                     }
                     else {
                         isPaused = true;
+                        fast = false;
+                        slow = false;
                     }
-                    delete s;
                 }
                 if(event.key.code == sf::Keyboard::J) { //change speed to 0.5 by pressing J
                     //message to double tic to half speed the game
@@ -287,8 +297,10 @@ int main() {
                     memcpy(halfTime.data(), half.data(), half.size());
                     socket.send(halfTime, SEND);
 
-                    fast = false;
-                    slow = true;
+                    if(!isPaused) {
+                        fast = false;
+                        slow = true;
+                    }
 
                     //update lastTime
                     zmq::message_t resp;
@@ -297,33 +309,37 @@ int main() {
                 }
                 if(event.key.code == sf::Keyboard::K) { //change speed to 1.0 by pressing K
                     //message to change tic to normal speed the game
-                    std::string half = "standardTic";
-                    zmq::message_t halfTime(half.size());
-                    memcpy(halfTime.data(), half.data(), half.size());
-                    socket.send(halfTime, SEND);
+                    // std::string half = "standardTic";
+                    // zmq::message_t halfTime(half.size());
+                    // memcpy(halfTime.data(), half.data(), half.size());
+                    // socket.send(halfTime, SEND);
 
-                    fast = false;
-                    slow = false;
+                    if(!isPaused) {
+                        fast = false;
+                        slow = false;
+                    }
 
                     //update lastTime
-                    zmq::message_t resp;
-                    socket.recv(resp, REPLY);
-                    lastTime = std::stof(resp.to_string());
+                    // zmq::message_t resp;
+                    // socket.recv(resp, REPLY);
+                    // lastTime = std::stof(resp.to_string());
                 }
                 if(event.key.code == sf::Keyboard::L) { //change speed to 2.0 by pressing L
                     //message to half tic to double the speed of the game
-                    std::string half = "halfTic";
-                    zmq::message_t halfTime(half.size());
-                    memcpy(halfTime.data(), half.data(), half.size());
-                    socket.send(halfTime, SEND);
+                    // std::string half = "halfTic";
+                    // zmq::message_t halfTime(half.size());
+                    // memcpy(halfTime.data(), half.data(), half.size());
+                    // socket.send(halfTime, SEND);
 
-                    fast = true;
-                    slow = false;
+                    if(!isPaused) {
+                        fast = true;
+                        slow = false;
+                    }
 
                     //update lastTime
-                    zmq::message_t resp;
-                    socket.recv(resp, REPLY);
-                    lastTime = std::stof(resp.to_string());
+                    // zmq::message_t resp;
+                    // socket.recv(resp, REPLY);
+                    // lastTime = std::stof(resp.to_string());
                 }
             }
             if(mode && event.type == sf::Event::Resized) {
@@ -357,53 +373,33 @@ int main() {
         lastTime = currTime;
 
         //get the current state of the game, fast, slow, paused, etc
-        std::string getState = "getState";
-        zmq::message_t getStateS(getState.size());
-        memcpy(getStateS.data(), getState.data(), getState.size());
-        socket.send(getStateS, SEND);
+        // std::string getState = "getState";
+        // zmq::message_t getStateS(getState.size());
+        // memcpy(getStateS.data(), getState.data(), getState.size());
+        // socket.send(getStateS, SEND);
 
-        zmq::message_t rtnState;
-        socket.recv(rtnState, REPLY);
-        std::string currState = rtnState.to_string();
+        // zmq::message_t rtnState;
+        // socket.recv(rtnState, REPLY);
+        // std::string currState = rtnState.to_string();
 
-        if(currState == "pause") {
-            isPaused = true;
-            fast = false;
-            slow = false;
-        }
-        else if(currState == "fast") {
-            fast = true;
-            slow = false;
-        }
-        else if(currState == "slow") {
-            slow = true;
-            fast = false;
-        }
-        else if(currState == "normal") {
-            isPaused = false;
-            slow = false;
-            fast = false;
-        }
-
-        //game is paused, no movement
-        if(isPaused) {
-            deltaTime = 0.f;
-        }
-
-        //clear window for drawing
-        window.clear(sf::Color::Black);
-
-        if(fast) {
-            deltaTime *= 2;
-        }
-        else if(slow) {
-            deltaTime /= 2;
-        }
-
-        //bug regarding unpausing
-        if(deltaTime < 0.f) {
-            deltaTime = 0.0025f;
-        }
+        // if(currState == "pause") {
+        //     isPaused = true;
+        //     fast = false;
+        //     slow = false;
+        // }
+        // else if(currState == "fast") {
+        //     fast = true;
+        //     slow = false;
+        // }
+        // else if(currState == "slow") {
+        //     slow = true;
+        //     fast = false;
+        // }
+        // else if(currState == "normal") {
+        //     isPaused = false;
+        //     slow = false;
+        //     fast = false;
+        // }
 
         //update moving platforms positions
         std::string getMoving = "getMoving";
@@ -453,6 +449,26 @@ int main() {
 
         zmq::message_t noUse;
         socket.recv(noUse, REPLY);
+
+        //game is paused, no movement
+        if(isPaused) {
+            deltaTime = 0.f;
+        }
+
+        //clear window for drawing
+        window.clear(sf::Color::Black);
+
+        if(fast) {
+            deltaTime *= 2;
+        }
+        else if(slow) {
+            deltaTime /= 2;
+        }
+
+        //bug regarding unpausing
+        if(deltaTime < 0.f) {
+            deltaTime = 0.0025f;
+        }
 
         //threads for collision and movement for current player
         std::mutex m;

@@ -258,15 +258,15 @@ void *worker_routine(void *arg) {
                 float deltaTime;
                 sscanf(players, "%f", &deltaTime);
 
-                if(fast) {
-                    deltaTime *= 2;
-                }
-                else if(slow) {
-                    deltaTime /= 2;
-                }
-                else if(global.isPaused()) {
-                    deltaTime = 0;
-                }
+                // if(fast) {
+                //     deltaTime *= 2;
+                // }
+                // else if(slow) {
+                //     deltaTime /= 2;
+                // }
+                // else if(global.isPaused()) {
+                //     deltaTime = 0;
+                // }
 
                 //account for more clients connecting to prevent speedup
                 deltaTime /= playerList.size();
