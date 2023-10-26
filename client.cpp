@@ -18,15 +18,8 @@
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
 
-volatile bool flag = false;
-
 void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
-}
-
-//handler function if crash
-void exit_handler(int s) {
-    flag = true;
 }
 
 int main() {
@@ -166,14 +159,17 @@ int main() {
     //a list of available ids still connected to the server
     std::vector<int> available;
 
-    //sigaction to catch crashing/force exits
-    struct sigaction sigIntHandler;
-
-    sigIntHandler.sa_handler = exit_handler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = 0;
-
     while(true) {
+
+        //send message to server to make sure we are active
+        std::string active = "active ";
+        active += std::to_string(playerId);
+        zmq::message_t activeSend(active.size());
+        memcpy(activeSend.data(), active.data(), active.size());
+        socket.send(activeSend, SEND);
+
+        zmq::message_t activeRtn;
+        socket.recv(activeRtn, REPLY);
 
         //add the clients to the clients map
         std::string getClient = "getClient"; //(1)
@@ -225,13 +221,11 @@ int main() {
             }
         }
 
-        sigaction(SIGINT, &sigIntHandler, NULL);
-
         sf::Event event; //checking for window events
 
         while(window.pollEvent(event)) {
 
-            if(event.type == sf::Event::Closed || flag) { //check close window event
+            if(event.type == sf::Event::Closed) { //check close window event
                 std::string dis = "disconnect ";
                 dis += std::to_string(playerId);
                 zmq::message_t disSend(dis.size());

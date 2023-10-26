@@ -20,6 +20,7 @@
 //map of client ids matching to a player
 std::unordered_map<int, std::shared_ptr<Player>> playerList;
 int nextId = 1;
+std::unordered_map<int, float> playerTimes; //map of player times for activity
 
 int64_t defaultTic = 64;
 
@@ -54,12 +55,24 @@ SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
 Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(850.f, 0.f));
 
 void *worker_routine(void *arg) {
+
     //connect to socket
     zmq::context_t *context = (zmq::context_t *) arg;
     zmq::socket_t socket(*context, ZMQ_REP);
     socket.connect("inproc://workers");
 
     while(true) {
+
+        //make sure players are active and if not delete them
+        float testTime = global.getTime();
+        for(auto& p : playerTimes) {
+            if(testTime - p.second > 0.03) {
+                playerList.erase(p.first);
+                playerTimes.erase(p.first);
+            }
+            //std::cout << p.first << "|" << p.second << std::endl;
+        }
+
         zmq::message_t reply;
         socket.recv(reply, REPLY);
         std::string message = reply.to_string(); //get the message sent(1)
@@ -76,7 +89,8 @@ void *worker_routine(void *arg) {
             //add player and client id to the map and increment nextId for next client
             if(playerList.find(nextId) == playerList.end()) {
                 playerList.insert(std::make_pair(nextId, std::make_shared<Player>(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f))));
-                playerList.at(nextId)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
+                playerList.at(nextId)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);\
+                playerTimes[nextId] = global.getTime();;
             }
             ++nextId;
             std::cout << "connect" << std::endl;
@@ -186,6 +200,7 @@ void *worker_routine(void *arg) {
                 //std::cout << message << std::endl;
                 //std::cout << exitId << std::endl;
                 playerList.erase(exitId);
+                playerTimes.erase(exitId);
 
                 std::string tempMess = "exitNow";
                 zmq::message_t tempMessSend(tempMess.size());
@@ -231,6 +246,17 @@ void *worker_routine(void *arg) {
                 zmq::message_t rtnState(currState.size());
                 memcpy(rtnState.data(), currState.data(), currState.size());
                 socket.send(rtnState, SEND);
+            }
+            else if(message.find("active") != std::string::npos) { //make sure player is active
+                float connectId;
+                sscanf(message.c_str() + 7, "%f", &connectId);
+
+                playerTimes[connectId] = global.getTime();
+
+                std::string tempMess = "activeNow";
+                zmq::message_t tempMessSend(tempMess.size());
+                memcpy(tempMessSend.data(), tempMess.data(), tempMess.size());
+                socket.send(tempMessSend, SEND);
             }
             else { //if no other message means we got some time frame so update our entities
                 //update the players and platforms
