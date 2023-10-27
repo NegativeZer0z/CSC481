@@ -318,7 +318,7 @@ int main() {
     floor1.initTexture("textures/grass.png");
     floor2.initTexture("textures/grass.png");
     platform.initTexture("textures/rockfloor.png");
-    platform2.initTexture("textures/rockfloor.png");
+    platform2.initTexture("textures/blueTile.png");
     moving->initTexture("textures/rockfloor.png");
     moving2->initTexture("textures/rockfloor.png");
 

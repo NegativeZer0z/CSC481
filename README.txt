@@ -33,7 +33,7 @@ Game Controls:
 
 
 Texture/Art Credits:
-    Within the textures file there should be 3 png files -- grass.png, mage.png, and rockfloor.png
+    Within the textures file there should be 4 png files -- grass.png, mage.png, blueTile.png, and rockfloor.png
 
     grass.png:
     "29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
@@ -47,3 +47,7 @@ Texture/Art Credits:
     rockfloor.png:
     "100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     https://opengameart.org/node/7814
+
+    blueTile.png:
+    "40 procedural textures - texture26.png" by drummyfish licensed by CC0
+    https://opengameart.org/content/40-procedural-textures-texture26png

@@ -32,7 +32,7 @@ int main() {
     SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(0.f, 15.f), 0);
 
     //create Boundary
-    Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(900.f, 0.f));
+    Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(750.f, 0.f));
 
     //creates a moving platform
     std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(690.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
@@ -54,7 +54,7 @@ int main() {
     //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     //https://opengameart.org/node/7814
     platform.initTexture("textures/rockfloor.png");
-    platform2.initTexture("textures/rockfloor.png");
+    platform2.initTexture("textures/blueTile.png");
     moving->initTexture("textures/rockfloor.png");
     moving2->initTexture("textures/rockfloor.png");
 
@@ -178,6 +178,8 @@ int main() {
         first.join();
         second.join();
 
+        moving->update(deltaTime);
+        moving2->update(deltaTime);
         dz.checkCollision(player);
         player->wallCollision(window, view);
         boundary.shift(player, window, view);
@@ -185,6 +187,7 @@ int main() {
         if(player->checkState()) {
             sp.spawn(player);
         }
+
 
         //clear window for drawing
         window.clear(sf::Color::Black);

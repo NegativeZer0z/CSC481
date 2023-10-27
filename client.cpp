@@ -59,7 +59,7 @@ int main() {
     SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
 
     //create Boundary
-    Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(850.f, 0.f));
+    Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(700.f, 0.f));
 
     //creats a static platform
     StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
@@ -80,15 +80,19 @@ int main() {
 
     //initalize the textures
 
-    //both platforms uses rockfloor.png as the texture in the textures folder
+    //both moving platforms and one static platform uses rockfloor.png as the texture in the textures folder
     //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     //https://opengameart.org/node/7814
     platform.initTexture("textures/rockfloor.png");
-    platform2.initTexture("textures/rockfloor.png");
     moving->initTexture("textures/rockfloor.png");
     moving2->initTexture("textures/rockfloor.png");
 
-    //both floor objects uses grass.png as the texture in the textures folder
+    //the second static platform uses blueTile.png as the texture from the textures folder
+    //"40 procedural textures - texture26.png" by drummyfish licensed by CC0
+    //https://opengameart.org/content/40-procedural-textures-texture26png
+    platform2.initTexture("textures/blueTile.png");
+
+    //both floor platforms uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
     //https://opengameart.org/node/8054
     floor.initTexture("textures/grass.png");
