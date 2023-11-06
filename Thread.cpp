@@ -17,13 +17,43 @@ bool Thread::isBusy() {
     return busy;
 }
 
-void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
+void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move, EventManager *manager) {
     if(identity == 0) { //movement
         try {
             //std::unique_lock<std::mutex> cv_lock(*this->_mutex);
             _mutex->lock();
             if(move) {
-                (*player).update(deltaTime);
+                std::string temp = (*player).updateEvent();
+                if(temp == "left") {
+                    Event e("leftInput", 0);
+                    manager->raise(e);
+                    
+                    InputHandler *ih = new InputHandler;
+                    ih->player = player;
+                    ih->deltaTime = deltaTime;
+                    
+                    manager->registerEvent("leftInput", ih);
+                }
+                else if(temp == "right") {
+                    Event e("rightInput", 0);
+                    manager->raise(e);
+                    
+                    InputHandler *ih = new InputHandler;
+                    ih->player = player;
+                    ih->deltaTime = deltaTime;
+                    
+                    manager->registerEvent("rightInput", ih);
+                }
+                else if(temp == "jump") {
+                    Event e("jumpInput", 0);
+                    manager->raise(e);
+                    
+                    InputHandler *ih = new InputHandler;
+                    ih->player = player;
+                    ih->deltaTime = deltaTime;
+                    
+                    manager->registerEvent("jumpInput", ih);
+                }
             }
             // for(int i = 0; i < moving.size(); ++i) {
             //     moving[i]->update(deltaTime);

@@ -6,7 +6,7 @@
 #include "Spawnpoint.h"
 #include "SFML/Graphics.hpp"
 
-class SpawnEvent : public EventHandler {
+class SpawnHandler : public EventHandler {
 
     public:
         std::shared_ptr<Player> player;

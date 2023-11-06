@@ -15,36 +15,65 @@ Player::Player(sf::Vector2f position, sf::Vector2f size) : Entity(position, size
     rightBound = 1024.f;
 }
 
-void Player::update(float deltaTime) {
+void Player::update(float deltaTime, std::string input) {
     //slow down horizontal movement
-    velocity.x *= 0.5f;
+    //velocity.x *= 0.5f;
 
     //move left
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+    if(input == "left") {
         updateTexture(leftText.x, leftText.y);
         velocity.x += -PLAYER_SPEED * deltaTime;
     }
 
     //move right
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+    if(input == "right") {
         updateTexture(rightText.x, rightText.y);
         velocity.x += PLAYER_SPEED * deltaTime;
     }
 
     //jumping
-    if((sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::W)) && jump) {
+    if(input == "jump" && jump) {
         jump = false;
         if(velocity.y < MAX_VERTICAL_VELOCITY) {
             velocity.y += -JUMP_HEIGHT * deltaTime;
         }
     }
 
+    //velocity.y += GRAVITY * deltaTime; //apply gravity
+    if(deltaTime == 0) {
+        velocity.x = 0.0f;
+        velocity.y = 0.0f;
+    }
+    moveSprite(velocity);
+}
+
+void Player::applyGravity(float deltaTime) {
+    velocity.x *= 0.5f;
     velocity.y += GRAVITY * deltaTime; //apply gravity
     if(deltaTime == 0) {
         velocity.x = 0.0f;
         velocity.y = 0.0f;
     }
     moveSprite(velocity);
+}
+
+std::string Player::updateEvent() {
+    //move left
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        return "left";
+    }
+
+    //move right
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+        return "right";
+    }
+
+    //jumping
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))) {
+        return "jump";
+    }
+
+    return "noEvent";
 }
 
 void Player::initTexture(std::string path, int width, int height, sf::Vector2i left, sf::Vector2i right, int leftOffset, int botOffset, int startOffset) {

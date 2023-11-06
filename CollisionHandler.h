@@ -5,7 +5,7 @@
 #include "EventHandler.h"
 #include <memory>
 
-class CollisionEvent : public EventHandler {
+class CollisionHandler : public EventHandler {
 
     public:
         void onEvent(Event e);

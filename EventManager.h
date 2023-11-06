@@ -33,8 +33,6 @@ class EventManager {
 
         void raise(Event e); //raise events by adding to queue
 
-        void onEvent(Event e, std::shared_ptr<Player> player, Spawnpoint* sp); //handle the events
-
         void registerEvent(std::string s, EventHandler* h);
 
         void deregisterEvent(std::string s);

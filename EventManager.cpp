@@ -9,21 +9,6 @@ void EventManager::raise(Event e) {
     queue.push(e);
 }
 
-void EventManager::onEvent(Event e, std::shared_ptr<Player> player, Spawnpoint* sp) {
-    if(e.getEventType() == "collisionEvent") {
-
-    }
-    else if(e.getEventType() == "inputEvent") {
-
-    }
-    else if(e.getEventType() == "deathEvent") {
-        player->setState(true);
-    }
-    else if(e.getEventType() == "spawnEvent") {
-        sp->spawn(player);
-    } 
-}
-
 void EventManager::registerEvent(std::string s, EventHandler *h) {
     handlers[s] = h;
 }

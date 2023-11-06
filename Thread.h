@@ -8,6 +8,9 @@
 #include <thread>
 #include <chrono>
 #include <memory>
+#include "EventManager.h"
+#include "Event.h"
+#include "InputHandler.h"
 
 class Thread {
 
@@ -27,5 +30,5 @@ class Thread {
 
         bool isBusy(); //check if busy
 
-        void runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move); //run threads 
+        void runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move, EventManager *manager); //run threads 
 };

@@ -3,13 +3,13 @@
 #include "Entity.h"
 #define MAGE_START_OFFSET 12 //offset to find the starting point for the texture for mage.png
 #define MAGE_LEFT_OFFSET 36 //offset to make the sprite smaller to match art for mage.png
-#define MAGE_BOT_OFFSET 2 //offset to make the bottom pixel line not appear for mage.png\
+#define MAGE_BOT_OFFSET 2 //offset to make the bottom pixel line not appear for mage.png
 
 //player physics 
 #define GRAVITY 740.18f
 #define MAX_VERTICAL_VELOCITY 8.f
-#define PLAYER_SPEED 6600.f
-#define JUMP_HEIGHT 20280.f
+#define PLAYER_SPEED 3600.f
+#define JUMP_HEIGHT 16580.f
 #define SCREEN_SPEED 20.f
 
 class Player : public Entity {
@@ -43,7 +43,11 @@ class Player : public Entity {
     public:
         Player(sf::Vector2f position, sf::Vector2f size); //constructor
 
-        void update(float deltaTime); //update the player position/velocity through inputs and handle gravity
+        void update(float deltaTime, std::string input); //update the player position/velocity through inputs and handle gravity
+
+        std::string updateEvent(); //check for inputs and return a string of the event type
+
+        void applyGravity(float deltaTime); //apply gravity to player
 
         void updateTexture(int x, int y); //update the texture to the player
 

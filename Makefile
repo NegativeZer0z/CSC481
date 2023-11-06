@@ -1,7 +1,7 @@
 CC = g++
 
-platformer: main.o StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o Boundary.o Event.o EventManager.o DeathEvent.o SpawnEvent.o CollisionEvent.o InputEvent.o
-	$(CC) main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Spawnpoint.o SpecialZone.o Thread.o Timeline.o Boundary.o Event.o EventManager.o DeathEvent.o SpawnEvent.o CollisionEvent.o InputEvent.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system -pthread
+platformer: main.o StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o
+	$(CC) main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Spawnpoint.o SpecialZone.o Thread.o Timeline.o Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
 client: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o client.cpp Boundary.o
 	$(CC) client.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o -o client -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
@@ -48,17 +48,17 @@ Event.o: Event.cpp Event.h
 EventManager.o: EventManager.cpp EventManager.h
 	$(CC) -c EventManager.cpp
 
-DeathEvent.o: DeathEvent.cpp DeathEvent.h
-	$(CC) -c DeathEvent.cpp
+DeathHandler.o: DeathHandler.cpp DeathHandler.h
+	$(CC) -c DeathHandler.cpp
 
-SpawnEvent.o: SpawnEvent.cpp SpawnEvent.h
-	$(CC) -c SpawnEvent.cpp
+SpawnHandler.o: SpawnHandler.cpp SpawnHandler.h
+	$(CC) -c SpawnHandler.cpp
 
-InputEvent.o: InputEvent.cpp InputEvent.h
-	$(CC) -c InputEvent.cpp
+InputHandler.o: InputHandler.cpp InputHandler.h
+	$(CC) -c InputHandler.cpp
 
-CollisionEvent.o: CollisionEvent.cpp CollisionEvent.h
-	$(CC) -c CollisionEvent.cpp
+CollisionHandler.o: CollisionHandler.cpp CollisionHandler.h
+	$(CC) -c CollisionHandler.cpp
 
 clean:
 	rm -f *.o

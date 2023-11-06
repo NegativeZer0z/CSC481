@@ -11,11 +11,11 @@
 #include "Boundary.h"
 #include "Event.h"
 #include "EventManager.h"
-#include "DeathEvent.h"
-#include "SpawnEvent.h"
+#include "DeathHandler.h"
+#include "SpawnHandler.h"
 
-void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
-    fe->runMovement(moving, player, deltaTime, list, move);
+void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move, EventManager *manager) {
+    fe->runMovement(moving, player, deltaTime, list, move, manager);
 }
 
 int main() {
@@ -109,18 +109,6 @@ int main() {
     movingVector.push_back(moving2);
 
     EventManager manager;
-    
-    DeathEvent d;
-    d.player = player;
-
-    SpawnEvent s;
-    s.player = player;
-    s.view = view;
-    s.window = &window;
-    s.sp = &sp;
-
-    manager.registerEvent("deathEvent", &d);
-    manager.registerEvent("spawnEvent", &s);
 
     //keep the window open while program is running
     while(true) {
@@ -187,29 +175,50 @@ int main() {
         std::mutex m;
         std::condition_variable cv;
 
+        std::mutex m2;
+
+        manager.mutex = &m2;
+
         Thread t1(0, NULL, &m, &cv);
         Thread t2(1, &t1, &m, &cv);
 
-        std::thread first(run_wrapper, &t1, std::ref(movingVector), player, deltaTime, std::ref(list), true);
-        std::thread second(run_wrapper, &t2, std::ref(movingVector), player, deltaTime, std::ref(list), true);
+        std::thread first(run_wrapper, &t1, std::ref(movingVector), player, deltaTime, std::ref(list), true, &manager);
+        std::thread second(run_wrapper, &t2, std::ref(movingVector), player, deltaTime, std::ref(list), true, &manager);
 
         first.join();
         second.join();
 
+        // if(!manager.queue.empty()) {
+        //     Event e2 = manager.queue.top();
+        //     std::cout << e2.getEventType() << std::endl;
+        // }
+
         moving->update(deltaTime);
         moving2->update(deltaTime);
-
-        manager.mutex = &m;
 
         if(dz.checkCollision(player) && !player->checkState()) {
             Event dead("deathEvent", 0);
             Event spawn("spawnEvent", global.getTime() + 0.03f); //delay for 3 secs
             manager.raise(dead);
             manager.raise(spawn);
+
+            DeathHandler *d = new DeathHandler;
+            d->player = player;
+
+            SpawnHandler *s = new SpawnHandler;
+            s->player = player;
+            s->view = view;
+            s->window = &window;
+            s->sp = &sp;
+
+            manager.registerEvent("deathEvent", d);
+            manager.registerEvent("spawnEvent", s);
+            std::cout << "here" << std::endl;
         }
 
         player->wallCollision(window, view);
         boundary.shift(player, window, view);
+        player->applyGravity(deltaTime);
 
         {
             float eventTime = global.getTime();
@@ -220,12 +229,16 @@ int main() {
                 if(e.getTime() < eventTime) {
                     for(auto i : manager.handlers) {
                         i.second->onEvent(e);
+                        if(i.first == "deathEvent") {
+                            std::cout << "here2" << std::endl;
+                            std::cout << player->checkState() << std::endl;
+                        }
+                        //manager.deregisterEvent(e.getEventType()); //need to fix deregistering events
                     }
-                    //manager.onEvent(e, player, &sp);
                     manager.queue.pop();
                 }
                 else {
-                    break;
+                    break; //reached an event that currently can't be handled or needs to wait to be handled
                 }
             }
         }
