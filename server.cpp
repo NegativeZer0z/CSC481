@@ -89,8 +89,8 @@ void *worker_routine(void *arg) {
             //add player and client id to the map and increment nextId for next client
             if(playerList.find(nextId) == playerList.end()) {
                 playerList.insert(std::make_pair(nextId, std::make_shared<Player>(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f))));
-                playerList.at(nextId)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);\
-                playerTimes[nextId] = global.getTime();;
+                playerList.at(nextId)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
+                playerTimes[nextId] = global.getTime();
             }
             ++nextId;
             std::cout << "connect" << std::endl;

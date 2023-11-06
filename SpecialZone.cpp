@@ -26,9 +26,9 @@ bool SpecialZone::checkCollision(std::shared_ptr<Player> player) {
             && currBounds.left < playerBounds.left + playerBounds.width
             && currBounds.left + currBounds.width > playerBounds.left) 
         {
-            if(death) {
-                player->setState(true);
-            }
+            // if(death) {
+            //     player->setState(true);
+            // }
             return true;
         }
         //top collision
@@ -37,9 +37,9 @@ bool SpecialZone::checkCollision(std::shared_ptr<Player> player) {
             && currBounds.left < playerBounds.left + playerBounds.width
             && currBounds.left + currBounds.width > playerBounds.left) 
         {
-            if(death) {
-                player->setState(true);
-            }
+            // if(death) {
+            //     player->setState(true);
+            // }
             return true;
         }
         //right collision
@@ -48,9 +48,9 @@ bool SpecialZone::checkCollision(std::shared_ptr<Player> player) {
             && currBounds.top < playerBounds.top + playerBounds.height
             && currBounds.top + currBounds.height > playerBounds.top) 
         {
-            if(death) {
-                player->setState(true);
-            }
+            // if(death) {
+            //     player->setState(true);
+            // }
             return true;
         }
         //left collision
@@ -59,9 +59,9 @@ bool SpecialZone::checkCollision(std::shared_ptr<Player> player) {
             && currBounds.top < playerBounds.top + playerBounds.height
             && currBounds.top + currBounds.height > playerBounds.top) 
         {
-            if(death) {
-                player->setState(true);
-            }
+            // if(death) {
+            //     player->setState(true);
+            // }
             return true;
         }
     }

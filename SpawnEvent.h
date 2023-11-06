@@ -1,0 +1,21 @@
+#pragma once
+
+#include "EventHandler.h"
+#include <memory>
+#include "Player.h"
+#include "Spawnpoint.h"
+#include "SFML/Graphics.hpp"
+
+class SpawnEvent : public EventHandler {
+
+    public:
+        std::shared_ptr<Player> player;
+
+        Spawnpoint *sp;
+
+        sf::RenderWindow *window;
+
+        sf::View view;
+
+        void onEvent(Event e);
+};

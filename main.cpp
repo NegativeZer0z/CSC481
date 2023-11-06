@@ -9,6 +9,10 @@
 #include "SpecialZone.h"
 #include <unordered_map>
 #include "Boundary.h"
+#include "Event.h"
+#include "EventManager.h"
+#include "DeathEvent.h"
+#include "SpawnEvent.h"
 
 void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
     fe->runMovement(moving, player, deltaTime, list, move);
@@ -29,7 +33,7 @@ int main() {
     Spawnpoint sp(sf::Vector2f(100.f, 660.f), sf::Vector2f(32.f, 32.f));
 
     //create death zone
-    SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(0.f, 15.f), 0);
+    SpecialZone dz(sf::Vector2f(750.f, 730.f), sf::Vector2f(200.f, 15.f), 0);
 
     //create Boundary
     Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(750.f, 0.f));
@@ -103,6 +107,20 @@ int main() {
     std::vector<std::shared_ptr<MovingPlatform>> movingVector;
     movingVector.push_back(moving);
     movingVector.push_back(moving2);
+
+    EventManager manager;
+    
+    DeathEvent d;
+    d.player = player;
+
+    SpawnEvent s;
+    s.player = player;
+    s.view = view;
+    s.window = &window;
+    s.sp = &sp;
+
+    manager.registerEvent("deathEvent", &d);
+    manager.registerEvent("spawnEvent", &s);
 
     //keep the window open while program is running
     while(true) {
@@ -180,12 +198,36 @@ int main() {
 
         moving->update(deltaTime);
         moving2->update(deltaTime);
-        dz.checkCollision(player);
+
+        manager.mutex = &m;
+
+        if(dz.checkCollision(player) && !player->checkState()) {
+            Event dead("deathEvent", 0);
+            Event spawn("spawnEvent", global.getTime() + 0.03f); //delay for 3 secs
+            manager.raise(dead);
+            manager.raise(spawn);
+        }
+
         player->wallCollision(window, view);
         boundary.shift(player, window, view);
 
-        if(player->checkState()) {
-            sp.spawn(player);
+        {
+            float eventTime = global.getTime();
+            //std::cout << eventTime << std::endl;
+            std::lock_guard<std::mutex> lock(*manager.mutex);
+            while(!manager.queue.empty()) {
+                Event e = manager.queue.top();
+                if(e.getTime() < eventTime) {
+                    for(auto i : manager.handlers) {
+                        i.second->onEvent(e);
+                    }
+                    //manager.onEvent(e, player, &sp);
+                    manager.queue.pop();
+                }
+                else {
+                    break;
+                }
+            }
         }
 
 
@@ -201,7 +243,7 @@ int main() {
         player->render(window);
         floor2.render(window);
         window.draw(dz);
-        window.draw(boundary);
+        //window.draw(boundary);
 
         //display everything
         window.display();

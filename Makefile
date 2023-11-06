@@ -1,7 +1,7 @@
 CC = g++
 
-platformer: main.o StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o Boundary.o
-	$(CC) main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Spawnpoint.o SpecialZone.o Thread.o Timeline.o Boundary.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system -pthread
+platformer: main.o StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o Boundary.o Event.o EventManager.o DeathEvent.o SpawnEvent.o CollisionEvent.o InputEvent.o
+	$(CC) main.o Entity.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Spawnpoint.o SpecialZone.o Thread.o Timeline.o Boundary.o Event.o EventManager.o DeathEvent.o SpawnEvent.o CollisionEvent.o InputEvent.o -o platformer -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
 client: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o client.cpp Boundary.o
 	$(CC) client.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o -o client -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
@@ -41,6 +41,24 @@ Spawnpoint.o: Spawnpoint.cpp Spawnpoint.h
 
 Boundary.o: Boundary.cpp Boundary.h
 	$(CC) -c Boundary.cpp
+
+Event.o: Event.cpp Event.h
+	$(CC) -c Event.cpp
+
+EventManager.o: EventManager.cpp EventManager.h
+	$(CC) -c EventManager.cpp
+
+DeathEvent.o: DeathEvent.cpp DeathEvent.h
+	$(CC) -c DeathEvent.cpp
+
+SpawnEvent.o: SpawnEvent.cpp SpawnEvent.h
+	$(CC) -c SpawnEvent.cpp
+
+InputEvent.o: InputEvent.cpp InputEvent.h
+	$(CC) -c InputEvent.cpp
+
+CollisionEvent.o: CollisionEvent.cpp CollisionEvent.h
+	$(CC) -c CollisionEvent.cpp
 
 clean:
 	rm -f *.o

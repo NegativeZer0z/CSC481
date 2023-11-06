@@ -19,3 +19,5 @@ Spawnpoint.o
 .gitignore
 SpecialZone.o
 Boundary.o
+SpawnEvent.o
+*.o
