@@ -17,5 +17,5 @@ class SpawnHandler : public EventHandler {
 
         sf::View view;
 
-        void onEvent(Event e);
+        bool onEvent(Event e);
 };

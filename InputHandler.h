@@ -11,5 +11,5 @@ class InputHandler : public EventHandler {
 
         float deltaTime;
 
-        void onEvent(Event e);
+        bool onEvent(Event e);
 };

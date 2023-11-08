@@ -9,5 +9,5 @@ class DeathHandler : public EventHandler {
     public:
         std::shared_ptr<Player> player;
 
-        void onEvent(Event e);
+        bool onEvent(Event e);
 };

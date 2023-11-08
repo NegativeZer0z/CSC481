@@ -5,5 +5,5 @@
 class EventHandler {
 
     public:
-        virtual void onEvent(Event e) = 0;
+        virtual bool onEvent(Event e) = 0;
 };

@@ -228,12 +228,11 @@ int main() {
                 Event e = manager.queue.top();
                 if(e.getTime() < eventTime) {
                     for(auto i : manager.handlers) {
-                        i.second->onEvent(e);
-                        if(i.first == "deathEvent") {
-                            std::cout << "here2" << std::endl;
-                            std::cout << player->checkState() << std::endl;
+                        bool eventFlag = i.second->onEvent(e);
+                        if(eventFlag) {
+                            manager.deregisterEvent(e.getEventType());
+                            break;
                         }
-                        //manager.deregisterEvent(e.getEventType()); //need to fix deregistering events
                     }
                     manager.queue.pop();
                 }

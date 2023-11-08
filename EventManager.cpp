@@ -14,5 +14,6 @@ void EventManager::registerEvent(std::string s, EventHandler *h) {
 }
 
 void EventManager::deregisterEvent(std::string s) {
+    delete handlers[s];
     handlers.erase(s);
 }

@@ -8,7 +8,7 @@
 class CollisionHandler : public EventHandler {
 
     public:
-        void onEvent(Event e);
+        bool onEvent(Event e);
 
         std::shared_ptr<Player> player;
 
