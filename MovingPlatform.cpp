@@ -33,7 +33,7 @@ bool MovingPlatform::checkCollision(std::shared_ptr<Entity> entity) {
             && platformBounds.left < entityBounds.left + entityBounds.width
             && platformBounds.left + platformBounds.width > entityBounds.left) 
         {
-            entity->moveSprite(velocity);
+            //entity->moveSprite(velocity);
             return true;
         }
     }

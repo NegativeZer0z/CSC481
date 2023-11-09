@@ -12,5 +12,5 @@ class CollisionHandler : public EventHandler {
 
         std::shared_ptr<Player> player;
 
-        Entity *entity;
+        std::shared_ptr<Entity> entity;
 };

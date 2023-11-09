@@ -106,7 +106,7 @@ void Player::updateTexture(int x, int y) {
     sprite.setTextureRect(sf::IntRect(x + startOffset, textSize.y * y, textSize.x - leftOffset, textSize.y - botOffset));
 }
 
-bool Player::checkCollision(Entity& entity) {
+std::string Player::checkCollision(Entity& entity) {
     sf::FloatRect playerBounds = sprite.getGlobalBounds();
     sf::FloatRect entityBounds = entity.getGlobalBounds();
 
@@ -118,9 +118,10 @@ bool Player::checkCollision(Entity& entity) {
             && playerBounds.left < entityBounds.left + entityBounds.width
             && playerBounds.left + playerBounds.width > entityBounds.left) 
         {
-            velocity.y = 0.f;
-            setSpritePosition(playerBounds.left, entityBounds.top - playerBounds.height);
+            //velocity.y = 0.f;
+            //setSpritePosition(playerBounds.left, entityBounds.top - playerBounds.height);
             jump = true;
+            return "botCollision";
         }
         //top collision
         else if(playerBounds.top > entityBounds.top 
@@ -128,8 +129,9 @@ bool Player::checkCollision(Entity& entity) {
             && playerBounds.left < entityBounds.left + entityBounds.width
             && playerBounds.left + playerBounds.width > entityBounds.left) 
         {
-            velocity.y = 0.f;
-            setSpritePosition(playerBounds.left, entityBounds.top + entityBounds.height);
+            //velocity.y = 0.f;
+            //setSpritePosition(playerBounds.left, entityBounds.top + entityBounds.height);
+            return "topCollision";
         }
         //right collision
         else if(playerBounds.left < entityBounds.left 
@@ -137,8 +139,9 @@ bool Player::checkCollision(Entity& entity) {
             && playerBounds.top < entityBounds.top + entityBounds.height
             && playerBounds.top + playerBounds.height > entityBounds.top) 
         {
-            velocity.x = 0.f;
-            setSpritePosition(entityBounds.left - playerBounds.width, playerBounds.top);
+            //velocity.x = 0.f;
+            //setSpritePosition(entityBounds.left - playerBounds.width, playerBounds.top);
+            return "rightCollision";
         }
         //left collision
         else if(playerBounds.left > entityBounds.left 
@@ -146,13 +149,12 @@ bool Player::checkCollision(Entity& entity) {
             && playerBounds.top < entityBounds.top + entityBounds.height
             && playerBounds.top + playerBounds.height > entityBounds.top) 
         {
-            velocity.x = 0.f;
-            setSpritePosition(entityBounds.left + entityBounds.width, playerBounds.top);
+            //velocity.x = 0.f;
+            //setSpritePosition(entityBounds.left + entityBounds.width, playerBounds.top);
+            return "leftCollision";
         }
-
-        return true;
     }
-    return false;
+    return "noCollision";
 }
 
 void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
@@ -197,10 +199,18 @@ void Player::setState(bool state) {
 bool Player::checkState() {
     //set velocity to zero when dead before respawn
     if(dead) {
-        velocity.x = 0;
-        velocity.y = 0;
+        setVelocity(0, 0);
     }
     return dead;
+}
+
+void Player::setVelocity(float x, float y) {
+    velocity.x = x;
+    velocity.y = y;
+}
+
+sf::Vector2f Player::getVelocity() {
+    return velocity;
 }
 
 

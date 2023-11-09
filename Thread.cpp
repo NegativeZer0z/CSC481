@@ -17,7 +17,7 @@ bool Thread::isBusy() {
     return busy;
 }
 
-void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move, EventManager *manager) {
+void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<std::shared_ptr<Entity>>& list, bool move, EventManager *manager) {
     if(identity == 0) { //movement
         try {
             //std::unique_lock<std::mutex> cv_lock(*this->_mutex);
@@ -72,11 +72,93 @@ void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, s
                 _mutex->lock();
                 for(int i = 0; i < moving.size(); ++i) {
                     moving[i]->checkCollision(player);
-                    player->checkCollision(*moving[i]);
+                    std::string mCollide = player->checkCollision(*moving[i]);
+
+                    if(mCollide == "botCollision") {
+                        Event e("botCollision", 0);
+                        manager->raise(e);
+
+                        CollisionHandler *ch = new CollisionHandler;
+                        ch->player = player;
+                        ch->entity = moving[i];
+
+                        manager->registerEvent("botCollision", ch);
+                    }
+                    else if(mCollide == "topCollision") {
+                        Event e("topCollision", 0);
+                        manager->raise(e);
+
+                        CollisionHandler *ch = new CollisionHandler;
+                        ch->player = player;
+                        ch->entity = moving[i];
+
+                        manager->registerEvent("topCollision", ch);
+                    }
+                    else if(mCollide == "rightCollision") {
+                        Event e("rightCollision", 0);
+                        manager->raise(e);
+
+                        CollisionHandler *ch = new CollisionHandler;
+                        ch->player = player;
+                        ch->entity = moving[i];
+
+                        manager->registerEvent("rightCollision", ch);
+                    }
+                    else if(mCollide == "leftCollision") {
+                        Event e("leftCollision", 0);
+                        manager->raise(e);
+
+                        CollisionHandler *ch = new CollisionHandler;
+                        ch->player = player;
+                        ch->entity = moving[i];
+
+                        manager->registerEvent("leftCollision", ch);
+                    }
                 }
 
                 for(int i = 0; i < list.size(); ++i) {
-                    (*player).checkCollision(*list[i]);
+                    std::string collide = (*player).checkCollision(*list[i]);
+
+                    if(collide == "botCollision") {
+                        Event e("botCollision", 0);
+                        manager->raise(e);
+
+                        CollisionHandler *ch = new CollisionHandler;
+                        ch->player = player;
+                        ch->entity = list[i];
+
+                        manager->registerEvent("botCollision", ch);
+                    }
+                    else if(collide == "topCollision") {
+                        Event e("topCollision", 0);
+                        manager->raise(e);
+
+                        CollisionHandler *ch = new CollisionHandler;
+                        ch->player = player;
+                        ch->entity = list[i];
+
+                        manager->registerEvent("topCollision", ch);
+                    }
+                    else if(collide == "rightCollision") {
+                        Event e("rightCollision", 0);
+                        manager->raise(e);
+
+                        CollisionHandler *ch = new CollisionHandler;
+                        ch->player = player;
+                        ch->entity = list[i];
+
+                        manager->registerEvent("rightCollision", ch);
+                    }
+                    else if(collide == "leftCollision") {
+                        Event e("leftCollision", 0);
+                        manager->raise(e);
+
+                        CollisionHandler *ch = new CollisionHandler;
+                        ch->player = player;
+                        ch->entity = list[i];
+
+                        manager->registerEvent("leftCollision", ch);
+                    }
                 }
                 _mutex->unlock();
             }

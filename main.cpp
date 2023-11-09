@@ -14,7 +14,7 @@
 #include "DeathHandler.h"
 #include "SpawnHandler.h"
 
-void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move, EventManager *manager) {
+void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<std::shared_ptr<Entity>>& list, bool move, EventManager *manager) {
     fe->runMovement(moving, player, deltaTime, list, move, manager);
 }
 
@@ -43,30 +43,30 @@ int main() {
     std::shared_ptr<MovingPlatform> moving2 = std::make_shared<MovingPlatform>(sf::Vector2f(880.f, 550.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(0.0f, 1.0f), 4000.0f, 40.f, 40.f);
 
     //creats a static platform
-    StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
-    StaticPlatform platform2(sf::Vector2f(1020.f, 480.f), sf::Vector2f(100.f, 15.f));
+    std::shared_ptr<StaticPlatform> platform = std::make_shared<StaticPlatform>(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
+    std::shared_ptr<StaticPlatform> platform2 = std::make_shared<StaticPlatform>(sf::Vector2f(1020.f, 480.f), sf::Vector2f(100.f, 15.f));
 
     //creates a player
     std::shared_ptr<Player> player = std::make_shared<Player>(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f));
 
     //the base floors of the game
-    StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
+    std::shared_ptr<StaticPlatform> floor = std::make_shared<StaticPlatform>(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
 
-    StaticPlatform floor2(sf::Vector2f(1024.f, 750.f), sf::Vector2f(512.f, 18.f));
+    std::shared_ptr<StaticPlatform> floor2 = std::make_shared<StaticPlatform>(sf::Vector2f(1024.f, 750.f), sf::Vector2f(512.f, 18.f));
 
     //both platforms uses rockfloor.png as the texture in the textures folder
     //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     //https://opengameart.org/node/7814
-    platform.initTexture("textures/rockfloor.png");
-    platform2.initTexture("textures/blueTile.png");
+    platform->initTexture("textures/rockfloor.png");
+    platform2->initTexture("textures/blueTile.png");
     moving->initTexture("textures/rockfloor.png");
     moving2->initTexture("textures/rockfloor.png");
 
     //both floor objects uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
     //https://opengameart.org/node/8054
-    floor.initTexture("textures/grass.png");
-    floor2.initTexture("textures/grass.png");
+    floor->initTexture("textures/grass.png");
+    floor2->initTexture("textures/grass.png");
 
     //the player texture/art is the mage.png file in textures folder
     //"Four characters: My LPC entries" by Redshrike licensed CC-BY 3.0, CC-BY-SA 3.0, OGA-BY 3.0
@@ -90,11 +90,11 @@ int main() {
     bool mode = false;
 
     //push all static platforms to a list
-    std::vector<Entity*> list;
-    list.push_back(&floor);
-    list.push_back(&platform);
-    list.push_back(&floor2);
-    list.push_back(&platform2);
+    std::vector<std::shared_ptr<Entity>> list;
+    list.push_back(floor);
+    list.push_back(platform);
+    list.push_back(floor2);
+    list.push_back(platform2);
 
     //init timeline
     Timeline global(nullptr, 64);
@@ -213,7 +213,7 @@ int main() {
 
             manager.registerEvent("deathEvent", d);
             manager.registerEvent("spawnEvent", s);
-            std::cout << "here" << std::endl;
+            //std::cout << "here" << std::endl;
         }
 
         player->wallCollision(window, view);
@@ -247,13 +247,13 @@ int main() {
         window.clear(sf::Color::Black);
 
         //draw/render everything
-        platform.render(window);
-        platform2.render(window);
+        platform->render(window);
+        platform2->render(window);
         moving->render(window);
         moving2->render(window);
-        floor.render(window);
+        floor->render(window);
         player->render(window);
-        floor2.render(window);
+        floor2->render(window);
         window.draw(dz);
         //window.draw(boundary);
 

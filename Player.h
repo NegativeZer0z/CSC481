@@ -53,11 +53,15 @@ class Player : public Entity {
 
         void initTexture(std::string path, int width, int height, sf::Vector2i left, sf::Vector2i right, int leftOffset, int botOffset, int startOffset); //set the initial texture
 
-        bool checkCollision(Entity& entity); //check collision when moving to other entities
+        std::string checkCollision(Entity& entity); //check collision when moving to other entities
 
         void wallCollision(sf::RenderWindow& window, sf::View& view); //check collision with the borders of the window
 
         void setState(bool state); //set the state of the player(dead or not)
 
         bool checkState(); //get the state(dead or not) of the player
+
+        void setVelocity(float x, float y); //set the player velocity
+
+        sf::Vector2f getVelocity(); //get the currently player velocity
 };
