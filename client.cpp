@@ -13,13 +13,17 @@
 #include "SpecialZone.h"
 #include "Boundary.h"
 #include <signal.h>
+#include "Event.h"
+#include "EventManager.h"
+#include "DeathHandler.h"
+#include "SpawnHandler.h"
 
 //default flags for sending and receiving messages
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
 
-void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<Entity*>& list, bool move) {
-    fe->runMovement(moving, player, deltaTime, list, move);
+void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<std::shared_ptr<Entity>>& list, bool move, EventManager *manager) {
+    fe->runMovement(moving, player, deltaTime, list, move, manager);
 }
 
 int main() {
@@ -62,8 +66,8 @@ int main() {
     Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(700.f, 0.f));
 
     //creats a static platform
-    StaticPlatform platform(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
-    StaticPlatform platform2(sf::Vector2f(1020.f, 480.f), sf::Vector2f(100.f, 15.f));
+    std::shared_ptr<StaticPlatform> platform = std::make_shared<StaticPlatform>(sf::Vector2f(550.f, 700.f), sf::Vector2f(100.f, 15.f));
+    std::shared_ptr<StaticPlatform> platform2 = std::make_shared<StaticPlatform>(sf::Vector2f(1020.f, 480.f), sf::Vector2f(100.f, 15.f));
 
     //creates a moving platform
     std::shared_ptr<MovingPlatform> moving = std::make_shared<MovingPlatform>(sf::Vector2f(690.f, 650.f), sf::Vector2f(100.f, 15.f), sf::Vector2f(1.0f, 0.0f), 4000.0f, 40.f, 0.f);
@@ -75,28 +79,28 @@ int main() {
     //clients.insert(std::make_pair(playerId, &player));
 
     //the base floor of the game
-    StaticPlatform floor(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
-    StaticPlatform floor2(sf::Vector2f(1024.f, 750.f), sf::Vector2f(512.f, 18.f));
+    std::shared_ptr<StaticPlatform> floor = std::make_shared<StaticPlatform>(sf::Vector2f(0.f, 750.f), sf::Vector2f(1024.f, 18.f));
+    std::shared_ptr<StaticPlatform> floor2 = std::make_shared<StaticPlatform>(sf::Vector2f(1024.f, 750.f), sf::Vector2f(512.f, 18.f));
 
     //initalize the textures
 
     //both moving platforms and one static platform uses rockfloor.png as the texture in the textures folder
     //"100 Seamless Textures - 461223104.jpg" by Mitch Featherston licensed by CC0
     //https://opengameart.org/node/7814
-    platform.initTexture("textures/rockfloor.png");
+    platform->initTexture("textures/rockfloor.png");
     moving->initTexture("textures/rockfloor.png");
     moving2->initTexture("textures/rockfloor.png");
 
     //the second static platform uses blueTile.png as the texture from the textures folder
     //"40 procedural textures - texture26.png" by drummyfish licensed by CC0
     //https://opengameart.org/content/40-procedural-textures-texture26png
-    platform2.initTexture("textures/blueTile.png");
+    platform2->initTexture("textures/blueTile.png");
 
     //both floor platforms uses grass.png as the texture in the textures folder
     //"29 grounds and walls (and water) (1024x1024) - Grass1.png" by Mysteryem licensed GPL 2.0, GPL 3.0, CC-BY-SA 3.0
     //https://opengameart.org/node/8054
-    floor.initTexture("textures/grass.png");
-    floor2.initTexture("textures/grass.png");
+    floor->initTexture("textures/grass.png");
+    floor2->initTexture("textures/grass.png");
 
     //the player texture/art is the mage.png file in textures folder
     //"Four characters: My LPC entries" by Redshrike licensed CC-BY 3.0, CC-BY-SA 3.0, OGA-BY 3.0
@@ -121,11 +125,11 @@ int main() {
     bool mode = false;
 
     //push all static platforms to a list
-    std::vector<Entity*> list;
-    list.push_back(&floor);
-    list.push_back(&platform);
-    list.push_back(&platform2);
-    list.push_back(&floor2);
+    std::vector<std::shared_ptr<Entity>> list;
+    list.push_back(floor);
+    list.push_back(platform);
+    list.push_back(platform2);
+    list.push_back(floor2);
 
     //get the initial time to calc deltaTime
     std::string last = "getTime";
@@ -162,6 +166,8 @@ int main() {
 
     //a list of available ids still connected to the server
     std::vector<int> available;
+
+    EventManager manager; //event manager
 
     while(true) {
 
@@ -472,11 +478,14 @@ int main() {
         std::mutex m;
         std::condition_variable cv;
 
+        std::mutex m2;
+        manager.mutex = &m2;
+
         Thread t1(0, NULL, &m, &cv);
         Thread t2(1, &t1, &m, &cv);
 
-        std::thread first(run_wrapper, &t1, std::ref(movingVector), player, deltaTime, std::ref(list), focused);
-        std::thread second(run_wrapper, &t2, std::ref(movingVector), player, deltaTime, std::ref(list), focused);
+        std::thread first(run_wrapper, &t1, std::ref(movingVector), player, deltaTime, std::ref(list), focused, &manager);
+        std::thread second(run_wrapper, &t2, std::ref(movingVector), player, deltaTime, std::ref(list), focused, &manager);
 
         first.join();
         second.join();
@@ -495,10 +504,10 @@ int main() {
                 i.second->render(window);
             }
         }
-        platform.render(window);
-        platform2.render(window);
-        floor.render(window);
-        floor2.render(window);
+        platform->render(window);
+        platform2->render(window);
+        floor->render(window);
+        floor2->render(window);
 
         for(auto& i : movingVector) {
             i->render(window);

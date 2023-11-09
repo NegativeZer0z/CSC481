@@ -13,6 +13,10 @@
 #include <unistd.h>
 #include <cassert>
 #include "Boundary.h"
+#include "Event.h"
+#include "EventManager.h"
+#include "DeathHandler.h"
+#include "SpawnHandler.h"
 
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
