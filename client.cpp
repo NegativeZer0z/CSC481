@@ -490,18 +490,40 @@ int main() {
         first.join();
         second.join();
 
-        dz.checkCollision(player);
+        if(dz.checkCollision(player) && !player->checkState()) {
+            Event dead("deathEvent", 0);
+            //Event spawn("spawnEvent", currTime + 0.03f); //delay for 3 secs
+            manager.raise(dead);
+            //manager.raise(spawn);
+
+            DeathHandler *d = new DeathHandler;
+            d->player = player;
+
+            //TODO: send message regarding the spawn event to server to handle
+            // SpawnHandler *s = new SpawnHandler;
+            // s->player = player;
+            // s->view = view;
+            // s->window = &window;
+            // s->sp = &sp;
+
+            manager.registerEvent("deathEvent", d);
+            //manager.registerEvent("spawnEvent", s);
+            
+        }
         player->wallCollision(window, view);
         boundary.shift(player, window, view);
 
-        if(player->checkState()) {
-            sp.spawn(player);
-        }
+        // if(player->checkState()) {
+        //     sp.spawn(player);
+        // }
 
         //draw/render everything
         for(auto i : clients) {
             if(std::find(available.begin(), available.end(), i.first) != available.end()) {
-                i.second->render(window);
+                if(!i.second->checkState()) { //if player isn't dead render it
+                    i.second->render(window);
+                }
+                //i.second->render(window);
             }
         }
         platform->render(window);
