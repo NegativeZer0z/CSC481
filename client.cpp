@@ -169,6 +169,8 @@ int main() {
 
     EventManager manager; //event manager
 
+    bool justDied = false;
+
     while(true) {
 
         //send message to server to make sure we are active
@@ -217,6 +219,10 @@ int main() {
                 //update the position of all other clients
                 if(id != playerId) {
                     clients.at(id)->setSpritePosition(x, y);
+                }
+                else if(justDied && id == playerId) { //update from server the spawn
+                    clients.at(id)->setSpritePosition(x, y);
+                    justDied = false;
                 }
             }
         }
@@ -492,38 +498,66 @@ int main() {
 
         if(dz.checkCollision(player) && !player->checkState()) {
             Event dead("deathEvent", 0);
-            //Event spawn("spawnEvent", currTime + 0.03f); //delay for 3 secs
+            
             manager.raise(dead);
-            //manager.raise(spawn);
 
             DeathHandler *d = new DeathHandler;
             d->player = player;
 
-            //TODO: send message regarding the spawn event to server to handle
-            // SpawnHandler *s = new SpawnHandler;
-            // s->player = player;
-            // s->view = view;
-            // s->window = &window;
-            // s->sp = &sp;
 
             manager.registerEvent("deathEvent", d);
-            //manager.registerEvent("spawnEvent", s);
-            
+
+            //tell the server this player has died so create and handle the spawn event on the server
+            std::string spawnStr = "spawnEvent ";
+            spawnStr += std::to_string(playerId);
+
+            zmq::message_t spawnEvent(spawnStr.size());
+            memcpy(spawnEvent.data(), spawnStr.data(), spawnStr.size());
+            socket.send(spawnEvent, SEND);
+
+            zmq::message_t spawnRtn;
+            socket.recv(spawnRtn, REPLY);
+
+            view.setCenter(windowX / 2, windowY / 2);
+            window.setView(view);
+
+            justDied = true;
+
+            //std::cout << spawnStr << std::endl;
         }
+
         player->wallCollision(window, view);
         boundary.shift(player, window, view);
+        if(focused) {
+            player->applyGravity(deltaTime);
+        }
 
-        // if(player->checkState()) {
-        //     sp.spawn(player);
-        // }
+        //handle events
+        {
+            float eventTime = currTime;
+            std::lock_guard<std::mutex> lock(*manager.mutex);
+            while(!manager.queue.empty()) {
+                Event e = manager.queue.top();
+                if(e.getTime() < eventTime) {
+                    for(auto i : manager.handlers) {
+                        bool eventFlag = i.second->onEvent(e);
+                        if(eventFlag) {
+                            manager.deregisterEvent(e.getEventType());
+                            break;
+                        }
+                    }
+                    manager.queue.pop();
+                }
+                else {
+                    break; //don't handle the rest of the events, need to wait on them
+                }
+            }
+        }
 
         //draw/render everything
         for(auto i : clients) {
             if(std::find(available.begin(), available.end(), i.first) != available.end()) {
-                if(!i.second->checkState()) { //if player isn't dead render it
-                    i.second->render(window);
-                }
-                //i.second->render(window);
+                i.second->render(window);
             }
         }
         platform->render(window);

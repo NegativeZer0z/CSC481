@@ -17,6 +17,7 @@
 #include "EventManager.h"
 #include "DeathHandler.h"
 #include "SpawnHandler.h"
+#include <mutex>
 
 #define SEND zmq::send_flags::none
 #define REPLY zmq::recv_flags::none
@@ -58,6 +59,10 @@ SpecialZone dz(sf::Vector2f(650.f, 730.f), sf::Vector2f(1000.f, 15.f), 0);
 //create Boundary
 Boundary boundary(sf::Vector2f(50.f, 1000.f), sf::Vector2f(850.f, 0.f));
 
+EventManager manager;
+
+std::mutex *mutex;
+
 void *worker_routine(void *arg) {
 
     //connect to socket
@@ -67,12 +72,36 @@ void *worker_routine(void *arg) {
 
     while(true) {
 
+        //handle events
+        {
+            float eventTime = global.getTime();
+            std::lock_guard<std::mutex> lock(*manager.mutex);
+            while(!manager.queue.empty()) {
+                Event e = manager.queue.top();
+                if(e.getTime() < eventTime) {
+                    for(auto i : manager.handlers) {
+                        bool eventFlag = i.second->onEvent(e);
+                        if(eventFlag) {
+                            manager.deregisterEvent(e.getEventType());
+                            break;
+                        }
+                    }
+                    manager.queue.pop();
+                }
+                else {
+                    break; //don't handle the rest of the events, need to wait on them
+                }
+            }
+        }
+
         //make sure players are active and if not delete them
         float testTime = global.getTime();
         for(auto& p : playerTimes) {
             if(testTime - p.second > 0.03) {
+                mutex->lock();
                 playerList.erase(p.first);
                 playerTimes.erase(p.first);
+                mutex->unlock();
             }
             //std::cout << p.first << "|" << p.second << std::endl;
         }
@@ -91,12 +120,14 @@ void *worker_routine(void *arg) {
             socket.send(idReply, SEND);
 
             //add player and client id to the map and increment nextId for next client
+            mutex->lock();
             if(playerList.find(nextId) == playerList.end()) {
                 playerList.insert(std::make_pair(nextId, std::make_shared<Player>(sf::Vector2f(200.f, 550.f), sf::Vector2f(28.f, 62.f))));
                 playerList.at(nextId)->initTexture("textures/mage.png", 9, 4, sf::Vector2i(8, 1), sf::Vector2i(8, 3), MAGE_LEFT_OFFSET, MAGE_BOT_OFFSET, MAGE_START_OFFSET);
                 playerTimes[nextId] = global.getTime();
             }
             ++nextId;
+            mutex->unlock();
             std::cout << "connect" << std::endl;
         }
         else {
@@ -104,6 +135,7 @@ void *worker_routine(void *arg) {
                 std::string response;
 
                 //get cap of clients
+                mutex->lock();
                 int cap = playerList.size();
                 response += std::to_string(cap);
                 response += " ";
@@ -113,13 +145,16 @@ void *worker_routine(void *arg) {
                 for(auto i : playerList) {
                     int id = i.first;
                     std::shared_ptr<Player> p = i.second;
-                    response += std::to_string(id);
-                    response += " ";
-                    response += std::to_string(p->getPosition().x);
-                    response += " ";
-                    response += std::to_string(p->getPosition().y);
-                    response += " ";
+                    if(!p->checkState()) {
+                        response += std::to_string(id);
+                        response += " ";
+                        response += std::to_string(p->getPosition().x);
+                        response += " ";
+                        response += std::to_string(p->getPosition().y);
+                        response += " ";
+                    }
                 }
+                mutex->unlock();
 
                 //std::cout << response << std::endl;
                 zmq::message_t resp(response.size());
@@ -203,8 +238,10 @@ void *worker_routine(void *arg) {
                 sscanf(message.c_str() + 11, "%d", &exitId); //read in the id
                 //std::cout << message << std::endl;
                 //std::cout << exitId << std::endl;
+                mutex->lock();
                 playerList.erase(exitId);
                 playerTimes.erase(exitId);
+                mutex->unlock();
 
                 std::string tempMess = "exitNow";
                 zmq::message_t tempMessSend(tempMess.size());
@@ -261,6 +298,33 @@ void *worker_routine(void *arg) {
                 zmq::message_t tempMessSend(tempMess.size());
                 memcpy(tempMessSend.data(), tempMess.data(), tempMess.size());
                 socket.send(tempMessSend, SEND);
+            }
+            else if(message.find("spawnEvent") != std::string::npos) {
+                int playerId;
+                char tempStr[11];
+                sscanf(message.c_str(), "%s %d", tempStr, &playerId);
+
+                mutex->lock();
+                playerList.at(playerId)->setState(true);
+                mutex->unlock();
+
+                // std::cout << playerId << std::endl;
+                // std::cout << message << std::endl;
+
+                Event spawn("spawnEvent", global.getTime() + 0.03); //create a spawn event that is handled 3 secs later
+
+                manager.raise(spawn);
+
+                SpawnHandler *s = new SpawnHandler;
+                s->player = playerList.at(playerId);
+                s->sp = &sp;
+
+                manager.registerEvent("spawnEvent", s);
+
+                std::string spawnNothing = "spawn";
+                zmq::message_t nothingStr(spawnNothing.size());
+                memcpy(nothingStr.data(), spawnNothing.data(), spawnNothing.size());
+                socket.send(nothingStr, SEND);
             }
             else { //if no other message means we got some time frame so update our entities
                 //update the players and platforms
@@ -328,6 +392,12 @@ int main() {
 
     movingList[0] = moving;
     movingList[1] = moving2;
+
+    std::mutex m;
+    manager.mutex = &m;
+
+    std::mutex m2;
+    mutex = &m2;
 
     //connect workers
     zmq::context_t context(1);

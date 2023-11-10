@@ -207,14 +207,15 @@ int main() {
 
             SpawnHandler *s = new SpawnHandler;
             s->player = player;
-            s->view = view;
-            s->window = &window;
             s->sp = &sp;
 
             manager.registerEvent("deathEvent", d);
             manager.registerEvent("spawnEvent", s);
             //std::cout << "here" << std::endl;
         }
+
+        view.setCenter(windowX / 2, windowY / 2);
+        window.setView(view);
 
         player->wallCollision(window, view);
         boundary.shift(player, window, view);

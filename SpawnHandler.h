@@ -13,9 +13,5 @@ class SpawnHandler : public EventHandler {
 
         Spawnpoint *sp;
 
-        sf::RenderWindow *window;
-
-        sf::View view;
-
         bool onEvent(Event e);
 };
