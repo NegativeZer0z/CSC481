@@ -13,6 +13,12 @@
 #include "EventManager.h"
 #include "DeathHandler.h"
 #include "SpawnHandler.h"
+#include <v8/v8.h>
+#include <iostream>
+#include "v8helpers.h"
+#include "ScriptManager.h"
+#include <libplatform/libplatform.h>
+#include <cstdio>
 
 void run_wrapper(Thread *fe, std::vector<std::shared_ptr<MovingPlatform>>& moving, std::shared_ptr<Player> player, float deltaTime, std::vector<std::shared_ptr<Entity>>& list, bool move, EventManager *manager) {
     fe->runMovement(moving, player, deltaTime, list, move, manager);
@@ -109,6 +115,38 @@ int main() {
     movingVector.push_back(moving2);
 
     EventManager manager;
+
+    //test script
+    std::unique_ptr<v8::Platform> plat = v8::platform::NewDefaultPlatform();
+    v8::V8::InitializePlatform(plat.release());
+    v8::V8::InitializeICU();
+    v8::V8::Initialize();
+    v8::Isolate::CreateParams create_params;
+    create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+    v8::Isolate *isolate = v8::Isolate::New(create_params);
+
+    {
+        v8::Isolate::Scope isolate_scope(isolate); // must enter the virtual machine to do stuff
+        v8::HandleScope handle_scope(isolate);
+
+		// Best practice to isntall all global functions in the context ahead of time.
+        v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
+        // Bind the global 'print' function to the C++ Print callback.
+        global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, v8helpers::Print));
+		// Bind the global static factory function for creating new GameObject instances
+		global->Set(isolate, "gethandle", v8::FunctionTemplate::New(isolate, ScriptManager::getHandleFromScript));
+        v8::Local<v8::Context> default_context =  v8::Context::New(isolate, NULL, global);
+		v8::Context::Scope default_context_scope(default_context); // enter the context
+
+        ScriptManager *sm = new ScriptManager(isolate, default_context);
+
+        sm->addScript("hello_world", "scripts/helloWorld.js");
+        sm->runOne("hello_world", false);
+    }
+
+    isolate->Dispose();
+    v8::V8::Dispose();
+    v8::V8::ShutdownPlatform();
 
     //keep the window open while program is running
     while(true) {

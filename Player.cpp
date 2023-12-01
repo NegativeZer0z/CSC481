@@ -58,6 +58,10 @@ void Player::applyGravity(float deltaTime) {
 }
 
 std::string Player::updateEvent() {
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+        std::cout << "cord event" << std::endl;
+    }
+
     //move left
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         return "left";
