@@ -54,6 +54,16 @@ void Thread::runMovement(std::vector<std::shared_ptr<MovingPlatform>>& moving, s
                     
                     manager->registerEvent("jumpInput", ih);
                 }
+                else if(temp == "cordEvent") {
+                    Event e("cordEvent", 0);
+                    manager->raise(e);
+
+                    InputHandler *ih = new InputHandler;
+                    ih->player = player;
+                    ih->deltaTime = deltaTime;
+                    
+                    manager->registerEvent("cordEvent", ih);
+                }
             }
             // for(int i = 0; i < moving.size(); ++i) {
             //     moving[i]->update(deltaTime);

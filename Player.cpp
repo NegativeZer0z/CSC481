@@ -13,6 +13,7 @@ Player::Player(sf::Vector2f position, sf::Vector2f size) : Entity(position, size
     dead = false;
     leftBound = 512.f;
     rightBound = 1024.f;
+    powerUp = false;
 }
 
 void Player::update(float deltaTime, std::string input) {
@@ -29,6 +30,16 @@ void Player::update(float deltaTime, std::string input) {
     if(input == "right") {
         updateTexture(rightText.x, rightText.y);
         velocity.x += PLAYER_SPEED * deltaTime;
+    }
+
+    if(input == "special") {
+        powerUp = !powerUp;
+        // if(powerUp) {
+        //     std::cout << "power" << std::endl;
+        // }
+        // else {
+        //     std::cout << "no" << std::endl;
+        // }
     }
 
     //jumping
@@ -59,7 +70,7 @@ void Player::applyGravity(float deltaTime) {
 
 std::string Player::updateEvent() {
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-        std::cout << "cord event" << std::endl;
+        return "cordEvent";
     }
 
     //move left
@@ -197,7 +208,9 @@ void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
 }
 
 void Player::setState(bool state) {
-    dead = state;
+    if(!powerUp) {
+        dead = state;
+    }
 }
 
 bool Player::checkState() {
@@ -215,6 +228,10 @@ void Player::setVelocity(float x, float y) {
 
 sf::Vector2f Player::getVelocity() {
     return velocity;
+}
+
+bool Player::checkPowerUp() {
+    return powerUp;
 }
 
 

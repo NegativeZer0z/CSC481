@@ -13,5 +13,9 @@ bool InputHandler::onEvent(Event e) {
         player->update(deltaTime, "jump");
         return true;
     }
+    else if(e.getEventType().find("cordEvent") != std::string::npos) {
+        player->update(deltaTime, "special");
+        return true;
+    }
     return false;
 }

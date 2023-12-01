@@ -116,37 +116,37 @@ int main() {
 
     EventManager manager;
 
-    //test script
-    std::unique_ptr<v8::Platform> plat = v8::platform::NewDefaultPlatform();
-    v8::V8::InitializePlatform(plat.release());
-    v8::V8::InitializeICU();
-    v8::V8::Initialize();
-    v8::Isolate::CreateParams create_params;
-    create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-    v8::Isolate *isolate = v8::Isolate::New(create_params);
+    // //test script
+    // std::unique_ptr<v8::Platform> plat = v8::platform::NewDefaultPlatform();
+    // v8::V8::InitializePlatform(plat.release());
+    // v8::V8::InitializeICU();
+    // v8::V8::Initialize();
+    // v8::Isolate::CreateParams create_params;
+    // create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+    // v8::Isolate *isolate = v8::Isolate::New(create_params);
 
-    {
-        v8::Isolate::Scope isolate_scope(isolate); // must enter the virtual machine to do stuff
-        v8::HandleScope handle_scope(isolate);
+    // {
+    //     v8::Isolate::Scope isolate_scope(isolate); // must enter the virtual machine to do stuff
+    //     v8::HandleScope handle_scope(isolate);
 
-		// Best practice to isntall all global functions in the context ahead of time.
-        v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
-        // Bind the global 'print' function to the C++ Print callback.
-        global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, v8helpers::Print));
-		// Bind the global static factory function for creating new GameObject instances
-		global->Set(isolate, "gethandle", v8::FunctionTemplate::New(isolate, ScriptManager::getHandleFromScript));
-        v8::Local<v8::Context> default_context =  v8::Context::New(isolate, NULL, global);
-		v8::Context::Scope default_context_scope(default_context); // enter the context
+	// 	// Best practice to isntall all global functions in the context ahead of time.
+    //     v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
+    //     // Bind the global 'print' function to the C++ Print callback.
+    //     global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, v8helpers::Print));
+	// 	// Bind the global static factory function for creating new GameObject instances
+	// 	global->Set(isolate, "gethandle", v8::FunctionTemplate::New(isolate, ScriptManager::getHandleFromScript));
+    //     v8::Local<v8::Context> default_context =  v8::Context::New(isolate, NULL, global);
+	// 	v8::Context::Scope default_context_scope(default_context); // enter the context
 
-        ScriptManager *sm = new ScriptManager(isolate, default_context);
+    //     ScriptManager *sm = new ScriptManager(isolate, default_context);
 
-        sm->addScript("hello_world", "scripts/helloWorld.js");
-        sm->runOne("hello_world", false);
-    }
+    //     sm->addScript("hello_world", "scripts/helloWorld.js");
+    //     sm->runOne("hello_world", false);
+    // }
 
-    isolate->Dispose();
-    v8::V8::Dispose();
-    v8::V8::ShutdownPlatform();
+    // isolate->Dispose();
+    // v8::V8::Dispose();
+    // v8::V8::ShutdownPlatform();
 
     //keep the window open while program is running
     while(true) {
@@ -234,7 +234,7 @@ int main() {
         moving->update(deltaTime);
         moving2->update(deltaTime);
 
-        if(dz.checkCollision(player) && !player->checkState()) {
+        if(dz.checkCollision(player) && !player->checkState() && !player->checkPowerUp()) {
             Event dead("deathEvent", 0);
             Event spawn("spawnEvent", global.getTime() + 0.03f); //delay for 3 secs
             manager.raise(dead);

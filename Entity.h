@@ -3,6 +3,9 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <iostream>
+#include "v8helpers.h"
+#include "ScriptManager.h"
+#include <v8/v8.h>
 
 //window dimensions
 #define WINDOW_WIDTH 1024

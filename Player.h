@@ -40,6 +40,8 @@ class Player : public Entity {
 
         float rightBound;
 
+        bool powerUp;
+
     public:
         Player(sf::Vector2f position, sf::Vector2f size); //constructor
 
@@ -64,4 +66,6 @@ class Player : public Entity {
         void setVelocity(float x, float y); //set the player velocity
 
         sf::Vector2f getVelocity(); //get the currently player velocity
+
+        bool checkPowerUp();
 };
