@@ -26,5 +26,5 @@ void Entity::initTexture(std::string path) {
     }
     sprite.setPosition(position);
     sprite.setTexture(texture);
-    sprite.setTextureRect(sf::IntRect(position.x, position.y, size.x, size.y));
+    //sprite.setTextureRect(sf::IntRect(position.x, position.y, size.x, size.y));
 }

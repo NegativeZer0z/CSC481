@@ -68,4 +68,6 @@ class Player : public Entity {
         sf::Vector2f getVelocity(); //get the currently player velocity
 
         bool checkPowerUp();
+
+        void tempUpdate(float deltaTime);
 };

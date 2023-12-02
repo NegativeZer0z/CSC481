@@ -21,3 +21,4 @@ SpecialZone.o
 Boundary.o
 SpawnEvent.o
 *.o
+flappyBirdClient

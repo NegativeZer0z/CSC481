@@ -8,10 +8,16 @@ client: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Th
 	$(CC) client.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o $(FLAG) -o client -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
 server: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o server.cpp Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o
-	$(CC) server.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o $(FLAG) -o server -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread -lv8 -L/usr/lib/aarch64-linux-gnu
+	$(CC) server.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o $(FLAG) -o server -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
 main.o: main.cpp
 	$(CC) -c $(FLAG) main.cpp -I/usr/include -I/usr/include/v8
+
+flappyBirdClient: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o FlappyBirdClient.cpp Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o
+	$(CC) FlappyBirdClient.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o $(FLAG) -o flappyBirdClient -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
+
+flappyBirdServer: StaticPlatform.o Player.o MovingPlatform.o GeneralPlatform.o Entity.o Thread.o Timeline.o Spawnpoint.o SpecialZone.o FlappyBirdServer.cpp Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o
+	$(CC) FlappyBirdServer.cpp Entity.o Spawnpoint.o SpecialZone.o GeneralPlatform.o StaticPlatform.o Player.o MovingPlatform.o Thread.o Timeline.o Boundary.o Event.o EventManager.o DeathHandler.o SpawnHandler.o CollisionHandler.o InputHandler.o $(FLAG) -o flappyBirdServer -lzmq -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
 Thread.o: Thread.cpp Thread.h
 	$(CC) -c $(FLAG) Thread.cpp

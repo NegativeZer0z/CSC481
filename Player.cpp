@@ -16,6 +16,14 @@ Player::Player(sf::Vector2f position, sf::Vector2f size) : Entity(position, size
     powerUp = false;
 }
 
+void Player::tempUpdate(float deltaTime) {
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))) {
+        velocity.y += -JUMP_HEIGHT * deltaTime / 5;
+    }
+    velocity.y += GRAVITY * deltaTime / 3; //apply gravity
+    moveSprite(velocity);
+}
+
 void Player::update(float deltaTime, std::string input) {
     //slow down horizontal movement
     //velocity.x *= 0.5f;
@@ -34,12 +42,6 @@ void Player::update(float deltaTime, std::string input) {
 
     if(input == "special") {
         powerUp = !powerUp;
-        // if(powerUp) {
-        //     std::cout << "power" << std::endl;
-        // }
-        // else {
-        //     std::cout << "no" << std::endl;
-        // }
     }
 
     //jumping
@@ -183,6 +185,10 @@ void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
 
     if(sprite.getPosition().y < 0.f) { //bottom
         setSpritePosition(sprite.getPosition().x, 0.f);
+    }
+
+    if(sprite.getPosition().y + sprite.getGlobalBounds().height > window.getSize().y) { //bottom
+        setSpritePosition(sprite.getPosition().x, window.getSize().y - sprite.getGlobalBounds().height);
     }
 
     // if(sprite.getPosition().x < leftBound) {
