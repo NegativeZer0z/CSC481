@@ -41,6 +41,7 @@ void Player::update(float deltaTime, std::string input) {
     }
 
     if(input == "special") {
+        velocity.y += -JUMP_HEIGHT * deltaTime * 2;
         powerUp = !powerUp;
     }
 

@@ -134,6 +134,10 @@ int main() {
 
     Spawnpoint sp(sf::Vector2f(200.f, 400.f), sf::Vector2f(32.f, 32.f));
 
+    //the background art
+    //"Bevouliin Free Mountain Game Background" by bevouliin.com licensed CC0
+    //https://opengameart.org/content/bevouliin-free-mountain-game-background
+    //using the sky.png file
     sf::Texture backgroundTex;
     backgroundTex.loadFromFile("textures/Transparent PNG/sky.png");
     sf::Sprite background;
