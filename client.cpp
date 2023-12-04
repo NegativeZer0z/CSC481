@@ -529,7 +529,7 @@ int main() {
         player->wallCollision(window, view);
         boundary.shift(player, window, view);
         if(focused) {
-            player->applyGravity(deltaTime);
+            player->applyGravity(deltaTime, 1);
         }
 
         //handle events
@@ -550,7 +550,7 @@ int main() {
                 }
                 else {
                     break; //don't handle the rest of the events, need to wait on them
-                }
+            }
             }
         }
 

@@ -14,13 +14,13 @@ Player::Player(sf::Vector2f position, sf::Vector2f size) : Entity(position, size
     leftBound = 512.f;
     rightBound = 1024.f;
     powerUp = false;
+    score = 0;
 }
 
-void Player::tempUpdate(float deltaTime) {
+void Player::miniJump(float deltaTime) {
     if((sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))) {
         velocity.y += -JUMP_HEIGHT * deltaTime / 5;
     }
-    velocity.y += GRAVITY * deltaTime / 3; //apply gravity
     moveSprite(velocity);
 }
 
@@ -60,9 +60,9 @@ void Player::update(float deltaTime, std::string input) {
     moveSprite(velocity);
 }
 
-void Player::applyGravity(float deltaTime) {
+void Player::applyGravity(float deltaTime, int scalar) {
     velocity.x *= 0.5f;
-    velocity.y += GRAVITY * deltaTime; //apply gravity
+    velocity.y += GRAVITY * deltaTime / scalar; //apply gravity
     if(deltaTime == 0) {
         velocity.x = 0.0f;
         velocity.y = 0.0f;
@@ -174,22 +174,27 @@ std::string Player::checkCollision(Entity& entity) {
     return "noCollision";
 }
 
-void Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
+bool Player::wallCollision(sf::RenderWindow& window, sf::View& view) {
     if(sprite.getPosition().x < 0.f) { //hit left wall
         setSpritePosition(0.f, sprite.getPosition().y);
+        return true;
     }
 
     if(sprite.getPosition().x + sprite.getGlobalBounds().width > 1536.f) { //hit right wall
         setSpritePosition(1536.f - sprite.getGlobalBounds().width, sprite.getPosition().y);
+        return true;
     }
 
     if(sprite.getPosition().y < 0.f) { //bottom
-        setSpritePosition(sprite.getPosition().x, 0.f);
+        setSpritePosition(sprite.getPosition().x, 1.f);
+        return true;
     }
 
     if(sprite.getPosition().y + sprite.getGlobalBounds().height > window.getSize().y) { //bottom
-        setSpritePosition(sprite.getPosition().x, window.getSize().y - sprite.getGlobalBounds().height);
+        setSpritePosition(sprite.getPosition().x, window.getSize().y - sprite.getGlobalBounds().height - 1.f);
+        return true;
     }
+    return false;
 
     // if(sprite.getPosition().x < leftBound) {
     //     view.setCenter(leftBound, window.getSize().y / 2);
@@ -238,6 +243,22 @@ sf::Vector2f Player::getVelocity() {
 
 bool Player::checkPowerUp() {
     return powerUp;
+}
+
+void Player::incrementScore() {
+    ++score;
+}
+
+void Player::setScore(int score) {
+    this->score = score;
+}
+
+int Player::getScore() {
+    return score;
+}
+
+void Player::resetScore() {
+    score = 0;
 }
 
 

@@ -22,3 +22,5 @@ Boundary.o
 SpawnEvent.o
 *.o
 flappyBirdClient
+flappyBirdServer
+textures/fonts/boxy_bold_font.png

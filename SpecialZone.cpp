@@ -67,3 +67,8 @@ bool SpecialZone::checkCollision(std::shared_ptr<Player> player) {
     }
     return false;
 }
+
+int SpecialZone::getType() {
+    if(goal) return 1;
+    return 0;
+}

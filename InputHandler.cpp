@@ -17,5 +17,9 @@ bool InputHandler::onEvent(Event e) {
         player->update(deltaTime, "special");
         return true;
     }
+    else if(e.getEventType().find("flappyJump") != std::string::npos) {
+        player->miniJump(deltaTime);
+        return true;
+    }
     return false;
 }

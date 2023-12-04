@@ -15,4 +15,6 @@ class SpecialZone : public Entity {
         SpecialZone(sf::Vector2f pos, sf::Vector2f size, int type); //constructor
 
         bool checkCollision(std::shared_ptr<Player> player);
+
+        int getType();
 };

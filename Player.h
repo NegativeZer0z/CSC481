@@ -40,7 +40,9 @@ class Player : public Entity {
 
         float rightBound;
 
-        bool powerUp;
+        bool powerUp; //if player has a powerUp or not state
+
+        int score; //score of player
 
     public:
         Player(sf::Vector2f position, sf::Vector2f size); //constructor
@@ -49,7 +51,7 @@ class Player : public Entity {
 
         std::string updateEvent(); //check for inputs and return a string of the event type
 
-        void applyGravity(float deltaTime); //apply gravity to player
+        void applyGravity(float deltaTime, int scalar); //apply gravity to player
 
         void updateTexture(int x, int y); //update the texture to the player
 
@@ -57,7 +59,7 @@ class Player : public Entity {
 
         std::string checkCollision(Entity& entity); //check collision when moving to other entities
 
-        void wallCollision(sf::RenderWindow& window, sf::View& view); //check collision with the borders of the window
+        bool wallCollision(sf::RenderWindow& window, sf::View& view); //check collision with the borders of the window
 
         void setState(bool state); //set the state of the player(dead or not)
 
@@ -67,7 +69,15 @@ class Player : public Entity {
 
         sf::Vector2f getVelocity(); //get the currently player velocity
 
-        bool checkPowerUp();
+        bool checkPowerUp(); //check to see if the player is in a powerUp state
 
-        void tempUpdate(float deltaTime);
+        void miniJump(float deltaTime);
+
+        void incrementScore(); //inc the score count by one
+
+        void setScore(int score); //set the score count
+
+        int getScore(); //get the score count;
+
+        void resetScore();
 };
