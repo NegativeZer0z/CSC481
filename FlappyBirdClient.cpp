@@ -28,6 +28,8 @@ int main() {
     sf::ContextSettings settings;
     settings.antialiasingLevel = 4;
 
+    zmq::recv_result_t temp;
+
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "FlappyBird", sf::Style::Default, settings);
 
     window.setFramerateLimit(60);
@@ -161,7 +163,7 @@ int main() {
 
     //get the id and set it and create the static pipes and player and the sfml window
     zmq::message_t id;
-    socket.recv(id, REPLY);
+    temp = socket.recv(id, REPLY);
     playerId = std::stoi(id.to_string());
 
     sf::View view;
@@ -181,7 +183,7 @@ int main() {
     socket.send(timeInit, SEND);
 
     zmq::message_t initTime;
-    socket.recv(initTime, REPLY);
+    temp = socket.recv(initTime, REPLY);
     float lastTime = std::stof(initTime.to_string());
 
     EventManager manager; //event manager
@@ -221,7 +223,7 @@ int main() {
         socket.send(activeSend, SEND);
 
         zmq::message_t activeRtn;
-        socket.recv(activeRtn, REPLY);
+        temp = socket.recv(activeRtn, REPLY);
 
         sf::Event event; //checking for window events
         while(window.pollEvent(event)) {
@@ -234,7 +236,7 @@ int main() {
                 socket.send(disSend, SEND);
 
                 zmq::message_t exited;
-                socket.recv(exited, REPLY);
+                temp = socket.recv(exited, REPLY);
 
                 window.close();
                 exit(1);
@@ -257,7 +259,7 @@ int main() {
         socket.send(currInit, SEND);
 
         zmq::message_t nextTime;
-        socket.recv(nextTime, REPLY);
+        temp = socket.recv(nextTime, REPLY);
 
         //set the currtime and calc the deltaTime
         float currTime = std::stof(nextTime.to_string());

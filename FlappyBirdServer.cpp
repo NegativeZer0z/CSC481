@@ -43,7 +43,8 @@ void *worker_routine(void *arg) {
         }
 
         zmq::message_t reply;
-        socket.recv(reply, REPLY);
+        zmq::recv_result_t temp;
+        temp = socket.recv(reply, REPLY);
         std::string message = reply.to_string(); //get the message sent(1)
 
         //initailize the client by giving it an unique id
