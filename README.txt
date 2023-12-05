@@ -19,6 +19,7 @@ To run the game (platformer):
 
     Note: the entire window may not be on your screen on the first execution of it, if so drag it on the screen
     Note 2: the deathzone is located to the right of the platforms
+    Note 3: there is a separate readme for the Flappy Bird game called FlappyBirdREADME.txt
 
 Game Controls for platformer:
     Move left: "left arrow" or "a"
